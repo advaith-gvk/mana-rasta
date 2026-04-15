@@ -1,0 +1,15 @@
+{
+  "name": "mana-rasta",
+  "version": "1.0.0",
+  "description": "Mana Rasta — Hyderabad Pothole Reporting",
+  "private": true,
+  "workspaces": ["backend", "dashboard"],
+  "scripts": {
+    "dev:backend": "cd backend && npm run dev",
+    "dev:dashboard": "cd dashboard && npm run dev",
+    "build:all": "npm run build --workspaces",
+    "test:all": "npm test --workspaces",
+    "db:migrate": "cd backend && npm run db:migrate",
+    "db:seed": "cd backend && npm run db:seed"
+  }
+}

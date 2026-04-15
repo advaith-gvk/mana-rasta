@@ -1,0 +1,1772 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mana Rasta — GHMC Admin Portal</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --navy:#002B5C;--gold:#F5A623;--green:#058541;
+  --saffron:#FF9933;--red:#ef4444;--orange:#f97316;
+  --amber:#f59e0b;--blue:#3b82f6;
+  --bg:#F5F6FA;--white:#fff;--border:#eef0f4;
+  --text:#111827;--muted:#6b7280;--light:#9ca3af;
+}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+a{text-decoration:none;color:inherit;}
+button{font-family:inherit;cursor:pointer;}
+input,select,textarea{font-family:inherit;}
+
+/* ── Page fade ── */
+.page{display:none;animation:fadeIn .18s ease;}
+.page.active{display:block;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── App shell ── */
+#app-shell{display:flex;min-height:100vh;}
+#app-shell.hidden{display:none;}
+
+/* ── Sidebar ── */
+#sidebar{width:240px;min-height:100vh;background:var(--navy);display:flex;flex-direction:column;flex-shrink:0;position:fixed;top:0;left:0;bottom:0;z-index:100;transition:width .2s;}
+.sidebar-logo{padding:20px 18px 14px;}
+.sidebar-wordmark{font-family:Georgia,serif;font-size:19px;font-weight:700;color:#fff;letter-spacing:.5px;}
+.sidebar-sub{font-size:10px;color:rgba(255,255,255,.4);letter-spacing:.8px;text-transform:uppercase;margin-top:2px;}
+.sidebar-tri{display:flex;height:3px;}
+.sidebar-tri div{flex:1;}
+.sidebar-nav{flex:1;padding:10px 0;overflow-y:auto;scrollbar-width:none;}
+.sidebar-nav::-webkit-scrollbar{display:none;}
+.nav-section{font-size:10px;font-weight:700;color:rgba(255,255,255,.3);text-transform:uppercase;letter-spacing:.8px;padding:12px 18px 4px;}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 18px;cursor:pointer;font-size:13px;font-weight:500;color:rgba(255,255,255,.65);position:relative;transition:background .12s,color .12s;white-space:nowrap;}
+.nav-item:hover{background:rgba(255,255,255,.07);color:#fff;}
+.nav-item.active{background:rgba(245,166,35,.14);color:var(--gold);font-weight:600;}
+.nav-item.active::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--gold);border-radius:0 2px 2px 0;}
+.nav-icon{font-size:15px;width:18px;text-align:center;flex-shrink:0;}
+.nav-badge{margin-left:auto;background:var(--red);color:#fff;font-size:10px;font-weight:700;border-radius:10px;padding:1px 6px;flex-shrink:0;}
+.nav-badge.amber{background:var(--amber);}
+.sidebar-footer{padding:14px 18px;border-top:1px solid rgba(255,255,255,.08);}
+.s-user{display:flex;align-items:center;gap:10px;}
+.s-avatar{width:32px;height:32px;border-radius:9px;background:linear-gradient(135deg,var(--gold),#e8961a);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:var(--navy);flex-shrink:0;}
+.s-name{font-size:13px;font-weight:600;color:#fff;line-height:1.2;}
+.s-role{font-size:10px;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:.5px;}
+
+/* ── Main ── */
+#main{margin-left:240px;flex:1;display:flex;flex-direction:column;min-height:100vh;}
+
+/* ── Topbar ── */
+#topbar{background:var(--white);border-bottom:1px solid var(--border);padding:0 24px;height:58px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:90;}
+.tb-tri{height:3px;display:flex;}
+.tb-tri div{flex:1;}
+.tb-title{font-size:16px;font-weight:700;color:var(--text);}
+.tb-right{display:flex;align-items:center;gap:10px;}
+.tb-search{display:flex;align-items:center;gap:8px;background:#f9fafb;border:1px solid #e5e7eb;border-radius:9px;padding:7px 13px;font-size:13px;color:var(--muted);cursor:text;min-width:210px;position:relative;}
+.tb-search kbd{background:#e5e7eb;border-radius:4px;padding:1px 5px;font-size:10px;font-family:inherit;margin-left:auto;color:var(--muted);}
+.search-results{position:absolute;top:calc(100% + 6px);left:0;right:0;background:#fff;border:1px solid var(--border);border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,.12);z-index:200;display:none;overflow:hidden;}
+.search-results.open{display:block;}
+.search-item{display:flex;align-items:center;gap:10px;padding:10px 14px;cursor:pointer;font-size:13px;color:var(--text);}
+.search-item:hover{background:#f9fafb;}
+.search-item-icon{font-size:14px;width:20px;text-align:center;color:var(--muted);}
+.search-section{padding:6px 14px 3px;font-size:10px;font-weight:700;color:var(--light);text-transform:uppercase;letter-spacing:.6px;border-top:1px solid var(--border);}
+.tb-icon-btn{width:34px;height:34px;border-radius:9px;background:#f9fafb;border:1px solid #e5e7eb;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:14px;position:relative;}
+.tb-icon-btn:hover{background:#f3f4f6;}
+.notif-dot{position:absolute;top:6px;right:7px;width:7px;height:7px;background:var(--red);border-radius:50%;border:1.5px solid #fff;}
+.tb-dropdown{position:absolute;top:calc(100% + 8px);right:0;background:#fff;border:1px solid var(--border);border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,.12);z-index:200;display:none;min-width:200px;overflow:hidden;}
+.tb-dropdown.open{display:block;}
+.dd-item{display:flex;align-items:center;gap:10px;padding:10px 16px;cursor:pointer;font-size:13px;color:var(--text);}
+.dd-item:hover{background:#f9fafb;}
+.dd-item.danger{color:var(--red);}
+.dd-sep{height:1px;background:var(--border);margin:4px 0;}
+.dd-header{padding:10px 16px 6px;font-size:11px;color:var(--light);font-weight:600;text-transform:uppercase;letter-spacing:.5px;}
+.notif-item{padding:12px 16px;border-bottom:1px solid var(--border);cursor:pointer;}
+.notif-item:last-child{border-bottom:none;}
+.notif-item:hover{background:#f9fafb;}
+.notif-title{font-size:12px;font-weight:600;color:var(--text);margin-bottom:2px;}
+.notif-desc{font-size:11px;color:var(--muted);}
+.notif-time{font-size:10px;color:var(--light);margin-top:3px;}
+.tb-user-btn{display:flex;align-items:center;gap:8px;padding:5px 10px 5px 5px;border-radius:9px;cursor:pointer;border:1px solid #e5e7eb;background:#f9fafb;}
+.tb-user-btn:hover{background:#f3f4f6;}
+.tb-user-avatar{width:26px;height:26px;border-radius:7px;background:linear-gradient(135deg,var(--gold),#e8961a);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:var(--navy);}
+.tb-user-name{font-size:12px;font-weight:600;color:var(--text);}
+.tb-user-role{font-size:10px;color:var(--muted);}
+
+/* ── Content ── */
+#content{flex:1;padding:22px 24px;}
+
+/* ── Buttons ── */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 15px;border-radius:9px;font-size:13px;font-weight:600;cursor:pointer;border:none;transition:all .14s;white-space:nowrap;}
+.btn-primary{background:var(--navy);color:#fff;}
+.btn-primary:hover{background:#003d80;}
+.btn-gold{background:var(--gold);color:var(--navy);}
+.btn-gold:hover{background:#e8961a;}
+.btn-outline{background:#fff;border:1px solid #e5e7eb;color:#374151;}
+.btn-outline:hover{background:#f9fafb;}
+.btn-red{background:#fee2e2;color:#dc2626;border:1px solid #fecaca;}
+.btn-red:hover{background:#fecaca;}
+.btn-amber{background:#fef3c7;color:#b45309;border:1px solid #fde68a;}
+.btn-green{background:#dcfce7;color:#16a34a;border:1px solid #bbf7d0;}
+.btn-sm{padding:5px 11px;font-size:12px;}
+.btn-xs{padding:3px 9px;font-size:11px;}
+.btn-icon{width:32px;height:32px;padding:0;justify-content:center;}
+
+/* ── Cards / Layout ── */
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px;}
+.stat-card{background:#fff;border-radius:14px;padding:16px 18px;border:1px solid var(--border);box-shadow:0 1px 3px rgba(0,0,0,.04);}
+.stat-label{font-size:10px;font-weight:700;color:var(--light);text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px;}
+.stat-value{font-size:26px;font-weight:800;color:var(--text);line-height:1;margin-bottom:4px;}
+.stat-delta{font-size:11px;font-weight:600;margin-bottom:8px;}
+.delta-up{color:var(--green);}
+.delta-down{color:var(--red);}
+.sparkline{display:block;}
+
+.section-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+.section-title{font-size:14px;font-weight:700;color:var(--text);}
+.hdr-actions{display:flex;gap:8px;align-items:center;}
+
+.card{background:#fff;border-radius:14px;border:1px solid var(--border);box-shadow:0 1px 3px rgba(0,0,0,.04);}
+.card-hdr{padding:14px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.card-title{font-size:13px;font-weight:700;color:var(--text);}
+.card-body{padding:16px;}
+
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;}
+.grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;}
+
+/* ── Table ── */
+.table-wrap{background:#fff;border-radius:14px;border:1px solid var(--border);overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.04);}
+.table-toolbar{display:flex;align-items:center;gap:8px;padding:12px 14px;border-bottom:1px solid var(--border);flex-wrap:wrap;}
+.tbl-search{display:flex;align-items:center;gap:6px;background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;padding:6px 11px;font-size:12px;min-width:180px;}
+.tbl-search input{border:none;background:transparent;outline:none;font-size:12px;color:var(--text);width:100%;}
+.filter-pill{display:flex;align-items:center;gap:5px;background:#f9fafb;border:1px solid #e5e7eb;border-radius:7px;padding:6px 11px;font-size:12px;color:#374151;cursor:pointer;}
+.filter-pill select{border:none;background:transparent;font-size:12px;color:#374151;cursor:pointer;outline:none;}
+.bulk-bar{display:none;align-items:center;gap:8px;padding:8px 14px;background:#EBF0F9;border-bottom:1px solid #c7d7f0;font-size:12px;font-weight:600;color:var(--navy);}
+.bulk-bar.visible{display:flex;}
+table{width:100%;border-collapse:collapse;}
+th{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;padding:10px 14px;text-align:left;background:#f9fafb;border-bottom:1px solid var(--border);white-space:nowrap;cursor:pointer;user-select:none;}
+th:hover{color:var(--navy);}
+th.sort-asc::after{content:' ↑';}
+th.sort-desc::after{content:' ↓';}
+th.no-sort{cursor:default;}
+th.no-sort:hover{color:var(--muted);}
+td{font-size:12px;color:#374151;padding:11px 14px;border-bottom:1px solid #f5f6fa;vertical-align:middle;}
+tr:last-child td{border-bottom:none;}
+tr:hover td{background:#fafafa;}
+tr.selected td{background:#F0F4FF;}
+.photo-thumb{width:38px;height:30px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:14px;background:#e5e7eb;flex-shrink:0;border-left:3px solid transparent;}
+.photo-thumb.sev-critical{border-left-color:var(--red);}
+.photo-thumb.sev-high{border-left-color:var(--orange);}
+.photo-thumb.sev-medium{border-left-color:var(--amber);}
+.photo-thumb.sev-low{border-left-color:var(--green);}
+.pagination{display:flex;align-items:center;gap:4px;padding:11px 14px;border-top:1px solid var(--border);}
+.pg-info{font-size:11px;color:var(--light);margin-right:auto;}
+.pg-btn{width:30px;height:30px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;cursor:pointer;border:1px solid #e5e7eb;background:#fff;color:#374151;}
+.pg-btn.active{background:var(--navy);color:#fff;border-color:var(--navy);}
+.pg-btn:hover:not(.active){background:#f9fafb;}
+
+/* ── Badges ── */
+.badge{display:inline-flex;align-items:center;gap:3px;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:700;white-space:nowrap;}
+.b-red{background:#fee2e2;color:#dc2626;}
+.b-orange{background:#ffedd5;color:#ea580c;}
+.b-amber{background:#fef3c7;color:#b45309;}
+.b-green{background:#dcfce7;color:#16a34a;}
+.b-blue{background:#dbeafe;color:#2563eb;}
+.b-gray{background:#f3f4f6;color:var(--muted);}
+.b-navy{background:#EBF0F9;color:var(--navy);}
+
+/* ── Drawer ── */
+#drawer-overlay{position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:300;display:none;}
+#drawer-overlay.open{display:block;}
+#drawer{position:fixed;top:0;right:-540px;width:520px;max-width:95vw;height:100vh;background:#fff;z-index:301;box-shadow:-8px 0 32px rgba(0,0,0,.15);transition:right .25s ease;display:flex;flex-direction:column;overflow:hidden;}
+#drawer.open{right:0;}
+.drawer-hdr{padding:18px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+.drawer-title{font-size:15px;font-weight:700;color:var(--text);}
+.drawer-close{width:32px;height:32px;border-radius:8px;background:#f3f4f6;border:none;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;}
+.drawer-body{flex:1;overflow-y:auto;padding:20px;}
+.drawer-section{margin-bottom:20px;}
+.drawer-section-title{font-size:11px;font-weight:700;color:var(--light);text-transform:uppercase;letter-spacing:.6px;margin-bottom:10px;}
+.report-photo{width:100%;height:180px;background:#e5e7eb;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:48px;margin-bottom:14px;overflow:hidden;}
+.detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.detail-item{background:#f9fafb;border-radius:9px;padding:10px 12px;}
+.detail-label{font-size:10px;font-weight:700;color:var(--light);text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px;}
+.detail-value{font-size:13px;font-weight:600;color:var(--text);}
+.timeline-event{display:flex;gap:12px;margin-bottom:14px;}
+.tl-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;margin-top:4px;}
+.tl-connector{width:2px;background:#e5e7eb;flex-shrink:0;margin:2px auto 0;height:20px;}
+.tl-label{font-size:12px;font-weight:600;color:var(--text);}
+.tl-time{font-size:11px;color:var(--muted);margin-top:1px;}
+.notes-area{background:#f9fafb;border:1px solid #e5e7eb;border-radius:9px;padding:10px 12px;font-size:13px;color:var(--text);width:100%;resize:vertical;min-height:72px;outline:none;}
+.drawer-footer{padding:14px 20px;border-top:1px solid var(--border);display:flex;gap:8px;flex-shrink:0;}
+
+/* ── Modal ── */
+#modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:400;display:none;align-items:center;justify-content:center;}
+#modal-overlay.open{display:flex;}
+.modal{background:#fff;border-radius:16px;padding:24px;max-width:480px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,.25);max-height:90vh;overflow-y:auto;}
+.modal-title{font-size:16px;font-weight:700;color:var(--text);margin-bottom:6px;}
+.modal-desc{font-size:13px;color:var(--muted);margin-bottom:20px;line-height:1.5;}
+.modal-footer{display:flex;gap:8px;justify-content:flex-end;margin-top:20px;}
+.form-group{margin-bottom:14px;}
+.form-label{font-size:12px;font-weight:700;color:#374151;margin-bottom:5px;display:block;}
+.form-input{width:100%;border:1.5px solid #e5e7eb;border-radius:9px;padding:10px 13px;font-size:13px;outline:none;color:var(--text);transition:border-color .14s;}
+.form-input:focus{border-color:var(--navy);}
+.form-select{width:100%;border:1.5px solid #e5e7eb;border-radius:9px;padding:10px 13px;font-size:13px;outline:none;color:var(--text);background:#fff;}
+
+/* ── Quick actions ── */
+.quick-actions{display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap;}
+.qa-chip{display:flex;align-items:center;gap:7px;padding:9px 14px;border-radius:10px;background:#fff;border:1px solid var(--border);cursor:pointer;font-size:12px;font-weight:600;color:var(--text);transition:all .14s;}
+.qa-chip:hover{border-color:var(--navy);color:var(--navy);}
+.qa-chip .qa-count{background:var(--navy);color:#fff;border-radius:8px;padding:1px 7px;font-size:11px;}
+.qa-chip.warn .qa-count{background:var(--amber);}
+.qa-chip.danger .qa-count{background:var(--red);}
+
+/* ── Charts ── */
+.chart-card{background:#fff;border-radius:14px;border:1px solid var(--border);padding:18px;box-shadow:0 1px 3px rgba(0,0,0,.04);}
+.chart-title{font-size:13px;font-weight:700;color:var(--text);margin-bottom:2px;}
+.chart-sub{font-size:11px;color:var(--light);margin-bottom:14px;}
+.bar-group{display:flex;align-items:flex-end;gap:8px;height:130px;margin-top:8px;}
+.bar-zone{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;}
+.bar-val{font-size:9px;color:var(--muted);font-weight:700;}
+.bar-pair{display:flex;gap:3px;align-items:flex-end;width:100%;}
+.bar-b{flex:1;border-radius:4px 4px 0 0;min-height:4px;position:relative;}
+.bar-lbl{font-size:9px;color:var(--light);text-align:center;white-space:nowrap;}
+.chart-legend{display:flex;gap:14px;margin-top:10px;}
+.legend-item{display:flex;align-items:center;gap:5px;font-size:11px;color:#374151;}
+.legend-dot{width:10px;height:10px;border-radius:3px;}
+/* Donut */
+.donut-container{display:flex;align-items:center;gap:20px;}
+.donut-legend{display:flex;flex-direction:column;gap:7px;flex:1;}
+.dl-item{display:flex;align-items:center;gap:7px;font-size:12px;color:#374151;}
+.dl-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+.dl-val{margin-left:auto;font-weight:700;color:var(--text);}
+/* Trend line */
+.trend-svg{width:100%;overflow:visible;}
+/* Heatmap */
+.heatmap-grid{display:grid;gap:2px;}
+.hm-cell{border-radius:2px;height:14px;}
+.hm-labels{display:flex;gap:2px;margin-bottom:4px;}
+.hm-label{font-size:9px;color:var(--light);text-align:center;}
+/* Zone comparison */
+.zone-chart{overflow-x:auto;}
+/* Period tabs */
+.period-tabs{display:flex;gap:4px;background:#f3f4f6;border-radius:9px;padding:3px;}
+.period-tab{padding:5px 12px;border-radius:6px;font-size:12px;font-weight:600;color:var(--muted);cursor:pointer;transition:all .14s;}
+.period-tab.active{background:#fff;color:var(--navy);box-shadow:0 1px 3px rgba(0,0,0,.1);}
+
+/* ── Map ── */
+.map-wrap{position:relative;border-radius:14px;overflow:hidden;height:430px;border:1px solid var(--border);}
+.map-bg{background:#dce8ef;position:absolute;inset:0;}
+.map-grid{position:absolute;inset:0;background-image:repeating-linear-gradient(0deg,transparent,transparent 40px,#c8d4da 40px,#c8d4da 41px),repeating-linear-gradient(90deg,transparent,transparent 40px,#c8d4da 40px,#c8d4da 41px);opacity:.45;}
+.map-road-h{position:absolute;left:0;right:0;background:rgba(255,255,255,.78);}
+.map-road-v{position:absolute;top:0;bottom:0;background:rgba(255,255,255,.78);}
+.map-ward{position:absolute;border:1.5px dashed rgba(0,43,92,.3);background:rgba(0,43,92,.04);border-radius:4px;display:none;}
+.map-ward.visible{display:block;}
+.map-ward-label{position:absolute;top:4px;left:6px;font-size:9px;font-weight:700;color:rgba(0,43,92,.5);}
+.map-cluster{position:absolute;border-radius:50%;border:3px solid #fff;box-shadow:0 2px 10px rgba(0,0,0,.22);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:#fff;cursor:pointer;transform:translate(-50%,-50%);transition:transform .12s;}
+.map-cluster:hover{transform:translate(-50%,-50%) scale(1.15);}
+.map-pin{position:absolute;display:flex;flex-direction:column;align-items:center;cursor:pointer;transform:translateX(-50%);transition:transform .12s;}
+.map-pin:hover{transform:translateX(-50%) scale(1.2);}
+.map-pin-dot{width:20px;height:20px;border-radius:50%;border:2.5px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.28);display:flex;align-items:center;justify-content:center;font-size:8px;color:#fff;font-weight:800;}
+.map-pin-tail{width:2px;height:8px;}
+.map-popup{position:absolute;background:#fff;border-radius:12px;padding:12px 14px;box-shadow:0 4px 20px rgba(0,0,0,.18);border:1px solid var(--border);z-index:10;min-width:200px;display:none;}
+.map-popup.open{display:block;}
+.mp-title{font-size:12px;font-weight:700;color:var(--text);margin-bottom:6px;}
+.mp-row{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-bottom:3px;}
+.mp-val{font-weight:600;color:var(--text);}
+.map-controls{position:absolute;top:12px;right:12px;display:flex;flex-direction:column;gap:5px;}
+.map-ctrl{width:32px;height:32px;background:#fff;border-radius:7px;box-shadow:0 1px 5px rgba(0,0,0,.14);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:15px;font-weight:700;color:var(--navy);border:none;}
+.map-ctrl:hover{background:#f3f4f6;}
+.map-stats-box{position:absolute;top:12px;right:56px;background:#fff;border-radius:10px;padding:10px 14px;box-shadow:0 2px 8px rgba(0,0,0,.1);display:flex;gap:16px;}
+.map-stat{text-align:center;}
+.ms-val{font-size:17px;font-weight:800;color:var(--navy);}
+.ms-lbl{font-size:9px;color:var(--light);text-transform:uppercase;letter-spacing:.4px;}
+.map-legend-box{position:absolute;bottom:12px;left:12px;background:#fff;border-radius:10px;padding:10px 13px;box-shadow:0 2px 8px rgba(0,0,0,.1);}
+.ml-title{font-size:10px;font-weight:700;color:#374151;margin-bottom:5px;text-transform:uppercase;letter-spacing:.5px;}
+.ml-item{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--muted);margin-bottom:2px;}
+.ml-dot{width:9px;height:9px;border-radius:50%;}
+.map-search{position:absolute;top:12px;left:12px;background:#fff;border-radius:9px;padding:7px 12px;display:flex;align-items:center;gap:7px;box-shadow:0 2px 8px rgba(0,0,0,.1);}
+.map-search input{border:none;outline:none;font-size:12px;color:var(--text);width:150px;}
+.map-heatmap{position:absolute;inset:0;opacity:0;transition:opacity .3s;pointer-events:none;}
+.map-heatmap.visible{opacity:1;}
+
+/* ── Officers ── */
+.zone-tabs{display:flex;gap:4px;background:#f3f4f6;border-radius:9px;padding:3px;margin-bottom:16px;overflow-x:auto;}
+.zone-tab{padding:6px 13px;border-radius:6px;font-size:12px;font-weight:600;color:var(--muted);cursor:pointer;white-space:nowrap;transition:all .14s;}
+.zone-tab.active{background:#fff;color:var(--navy);box-shadow:0 1px 3px rgba(0,0,0,.1);}
+.officer-card{background:#fff;border-radius:12px;border:1px solid var(--border);padding:14px 16px;display:flex;align-items:center;gap:13px;}
+.off-avatar{width:42px;height:42px;border-radius:11px;background:linear-gradient(135deg,var(--navy),#003d80);display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:800;color:var(--gold);flex-shrink:0;}
+.off-name{font-size:13px;font-weight:700;color:var(--text);}
+.off-role{font-size:11px;color:var(--muted);margin-top:1px;}
+.off-contact{font-size:11px;color:var(--light);margin-top:2px;}
+.off-stats{display:flex;gap:12px;margin-left:auto;align-items:center;}
+.off-stat{text-align:center;}
+.off-stat-val{font-size:14px;font-weight:800;color:var(--navy);}
+.off-stat-lbl{font-size:9px;color:var(--light);text-transform:uppercase;letter-spacing:.4px;}
+.off-perf{padding:3px 8px;border-radius:8px;font-size:11px;font-weight:700;}
+.off-actions{display:flex;gap:6px;margin-left:8px;}
+.officer-search{display:flex;align-items:center;gap:8px;background:#fff;border:1px solid #e5e7eb;border-radius:9px;padding:7px 12px;margin-bottom:14px;}
+.officer-search input{border:none;outline:none;font-size:13px;color:var(--text);flex:1;}
+
+/* ── SLA ── */
+.sla-card{background:#fff;border-radius:12px;padding:14px 16px;border:1px solid var(--border);border-left:4px solid;}
+.sla-val{font-size:24px;font-weight:800;margin-bottom:2px;}
+.sla-lbl{font-size:11px;color:var(--muted);}
+.progress-bar{background:#f3f4f6;border-radius:99px;height:7px;overflow:hidden;margin-top:8px;}
+.progress-fill{height:100%;border-radius:99px;transition:width .4s;}
+
+/* ── Fraud ── */
+.fraud-alert{background:#fff;border-radius:12px;border:1px solid var(--border);padding:14px 16px;display:flex;align-items:flex-start;gap:12px;}
+.fraud-alert.critical{border-left:4px solid var(--red);}
+.fraud-alert.warning{border-left:4px solid var(--amber);}
+.fa-icon{font-size:20px;flex-shrink:0;margin-top:1px;}
+.fa-title{font-size:13px;font-weight:700;color:var(--text);margin-bottom:2px;}
+.fa-desc{font-size:12px;color:var(--muted);line-height:1.5;}
+.fa-time{font-size:11px;color:var(--light);margin-top:3px;}
+.fraud-tabs{display:flex;border-bottom:1px solid var(--border);margin-bottom:16px;}
+.fraud-tab{padding:10px 16px;font-size:13px;font-weight:600;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;}
+.fraud-tab.active{color:var(--navy);border-bottom-color:var(--navy);}
+.rules-item{display:flex;align-items:center;gap:12px;padding:12px 14px;background:#fff;border:1px solid var(--border);border-radius:10px;margin-bottom:8px;}
+.rule-label{flex:1;font-size:13px;color:var(--text);}
+.rule-val{font-size:12px;font-weight:700;color:var(--navy);}
+.tooltip{position:relative;display:inline-flex;}
+.tooltip-text{visibility:hidden;background:#1f2937;color:#fff;font-size:11px;padding:5px 9px;border-radius:7px;position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);white-space:nowrap;z-index:100;line-height:1.4;max-width:240px;white-space:normal;text-align:center;}
+.tooltip:hover .tooltip-text{visibility:visible;}
+
+/* ── Leaderboard ── */
+.lb-row{display:flex;align-items:center;gap:12px;padding:11px 14px;border-bottom:1px solid #f5f6fa;}
+.lb-row:last-child{border-bottom:none;}
+.lb-row.you{background:#FFF8E7;}
+.lb-rank{width:28px;text-align:center;font-size:13px;font-weight:700;color:var(--light);}
+.lb-name{flex:1;font-size:13px;font-weight:500;color:#374151;}
+.lb-badge{font-size:13px;margin-left:3px;}
+.lb-pts{font-size:13px;font-weight:700;color:var(--navy);}
+.lb-reports{font-size:11px;color:var(--light);margin-left:8px;width:60px;text-align:right;}
+
+/* ── Login ── */
+#login-page{position:fixed;inset:0;background:linear-gradient(135deg,#001d3d 0%,#002B5C 60%,#003d80 100%);display:flex;align-items:center;justify-content:center;z-index:500;}
+#login-page.hidden{display:none;}
+.login-card{background:#fff;border-radius:20px;padding:36px;width:400px;max-width:95vw;box-shadow:0 20px 60px rgba(0,0,0,.35);}
+.login-emblem{text-align:center;margin-bottom:20px;}
+.ghmc-crest{width:60px;height:60px;background:linear-gradient(135deg,var(--gold),#e8961a);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:28px;margin:0 auto 10px;}
+.login-wordmark{font-family:Georgia,serif;font-size:24px;font-weight:700;color:var(--navy);}
+.login-sub{font-size:11px;color:var(--light);letter-spacing:.6px;text-transform:uppercase;margin-top:3px;}
+.login-tri{display:flex;height:4px;border-radius:2px;overflow:hidden;margin-bottom:22px;}
+.login-tri div{flex:1;}
+.login-lbl{font-size:12px;font-weight:700;color:#374151;margin-bottom:5px;display:block;}
+.login-input{width:100%;border:1.5px solid #e5e7eb;border-radius:10px;padding:11px 14px;font-size:14px;outline:none;color:var(--text);transition:border-color .14s;font-family:inherit;}
+.login-input:focus{border-color:var(--navy);}
+.login-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
+.login-check{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--muted);cursor:pointer;}
+.login-link{font-size:12px;color:var(--navy);cursor:pointer;font-weight:600;}
+.login-btn{width:100%;background:var(--navy);color:#fff;border:none;border-radius:12px;padding:13px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;transition:background .14s;}
+.login-btn:hover{background:#003d80;}
+.login-error{background:#fee2e2;border:1px solid #fecaca;border-radius:8px;padding:8px 12px;font-size:12px;color:#dc2626;margin-bottom:14px;display:none;}
+.login-error.show{display:block;}
+.login-footer{text-align:center;margin-top:14px;font-size:11px;color:var(--light);}
+
+/* ── Admin Panel ── */
+.role-badge{display:inline-block;padding:2px 8px;border-radius:6px;font-size:11px;font-weight:700;}
+.role-sysadmin{background:#1e1b4b;color:#a5b4fc;}
+.role-commissioner{background:#EBF0F9;color:var(--navy);}
+.role-zone_ee{background:#dcfce7;color:#15803d;}
+.role-circle_dee{background:#fef3c7;color:#b45309;}
+.role-ward_ae{background:#f3f4f6;color:var(--muted);}
+
+/* ── Print ── */
+@media print{
+  #sidebar,#topbar,.btn,#drawer-overlay,#modal-overlay,#login-page{display:none!important;}
+  #main{margin-left:0!important;}
+  .page{display:block!important;}
+  .page:not(.active){display:none!important;}
+  body{background:#fff;}
+}
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar{width:5px;height:5px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:#d1d5db;border-radius:3px;}
+</style>
+</head>
+<body>
+
+<div id="login-page">
+  <div class="login-card">
+    <div class="login-emblem">
+      <div class="ghmc-crest">🏛️</div>
+      <div class="login-wordmark">Mana Rasta</div>
+      <div class="login-sub">GHMC Admin Portal</div>
+    </div>
+    <div class="login-tri"><div style="background:#FF9933"></div><div style="background:#fff"></div><div style="background:#058541"></div></div>
+    <div class="login-error" id="login-error">Invalid credentials. Please try again.</div>
+    <div class="form-group">
+      <label class="login-lbl">Officer ID / Email</label>
+      <input class="login-input" id="login-email" type="email" placeholder="you@ghmc.gov.in" autocomplete="username"/>
+    </div>
+    <div class="form-group">
+      <label class="login-lbl">Password</label>
+      <input class="login-input" id="login-pass" type="password" placeholder="••••••••" autocomplete="current-password"/>
+    </div>
+    <div class="login-row">
+      <label class="login-check"><input type="checkbox" id="remember-me" style="accent-color:var(--navy)"/> Remember me</label>
+      <span class="login-link" onclick="showModal('forgot-modal')">Forgot password?</span>
+    </div>
+    <button class="login-btn" onclick="doLogin()">Sign in to Portal →</button>
+    <div class="login-footer">Official GHMC portal · Authorised access only</div>
+  </div>
+</div>
+
+<div id="app-shell" class="hidden">
+  <!-- SIDEBAR -->
+  <div id="sidebar">
+    <div class="sidebar-logo">
+      <div class="sidebar-wordmark">Mana Rasta</div>
+      <div class="sidebar-sub">GHMC Admin Portal</div>
+    </div>
+    <div class="sidebar-tri"><div style="background:#FF9933"></div><div style="background:#fff"></div><div style="background:#058541"></div></div>
+    <nav class="sidebar-nav" id="sidebar-nav"></nav>
+    <div class="sidebar-footer">
+      <div class="s-user">
+        <div class="s-avatar" id="s-avatar">?</div>
+        <div>
+          <div class="s-name" id="s-name">—</div>
+          <div class="s-role" id="s-role">—</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <div id="main">
+    <!-- Tricolour under topbar -->
+    <div class="tb-tri"><div style="background:#FF9933"></div><div style="background:#fff"></div><div style="background:#058541"></div></div>
+    <div id="topbar">
+      <div class="tb-title" id="tb-title">Dashboard</div>
+      <div class="tb-right">
+        <!-- Search -->
+        <div class="tb-search" id="search-box" tabindex="0">
+          <span>🔍</span>
+          <span id="search-label" style="flex:1">Search reports, wards…</span>
+          <kbd>⌘K</kbd>
+          <div class="search-results" id="search-results"></div>
+        </div>
+        <!-- Bell -->
+        <div style="position:relative">
+          <div class="tb-icon-btn" id="bell-btn" onclick="toggleDropdown('notif-panel')">🔔<div class="notif-dot"></div></div>
+          <div class="tb-dropdown" id="notif-panel" style="min-width:280px;right:0">
+            <div class="dd-header">Notifications</div>
+            <div class="notif-item" onclick="nav('reports')"><div class="notif-title">14 reports unassigned</div><div class="notif-desc">Ward 14, 22, 31 — no AE assigned</div><div class="notif-time">2 minutes ago</div></div>
+            <div class="notif-item" onclick="nav('sla')"><div class="notif-title">SLA breach — MR-2025-H2R7</div><div class="notif-desc">Critical pothole overdue by 60 hours</div><div class="notif-time">1 hour ago</div></div>
+            <div class="notif-item" onclick="nav('fraud')"><div class="notif-title">Fraud alert — duplicate reports</div><div class="notif-desc">User +91 98765 43210 flagged</div><div class="notif-time">3 hours ago</div></div>
+          </div>
+        </div>
+        <!-- Settings -->
+        <div style="position:relative">
+          <div class="tb-icon-btn" onclick="toggleDropdown('settings-panel')">⚙️</div>
+          <div class="tb-dropdown" id="settings-panel" style="right:0">
+            <div class="dd-item" onclick="showModal('profile-modal')">👤 &nbsp;Profile</div>
+            <div class="dd-item" onclick="window.open('https://docs.ghmc.gov.in','_blank')">📖 &nbsp;Documentation</div>
+            <div class="dd-sep"></div>
+            <div class="dd-item danger" onclick="doLogout()">🚪 &nbsp;Sign out</div>
+          </div>
+        </div>
+        <!-- User chip -->
+        <div class="tb-user-btn" onclick="toggleDropdown('settings-panel')">
+          <div class="tb-user-avatar" id="tb-avatar">?</div>
+          <div><div class="tb-user-name" id="tb-name">—</div><div class="tb-user-role" id="tb-role-lbl">—</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div id="content">
+
+    <!-- ═══ DASHBOARD ═══ -->
+    <div class="page" id="page-dashboard">
+      <div class="quick-actions" id="qa-strip"></div>
+      <!-- Date range -->
+      <div style="display:flex;justify-content:flex-end;margin-bottom:14px">
+        <div class="period-tabs" id="dash-period">
+          <div class="period-tab active" onclick="setDashPeriod('today',this)">Today</div>
+          <div class="period-tab" onclick="setDashPeriod('week',this)">This Week</div>
+          <div class="period-tab active" onclick="setDashPeriod('month',this)">This Month</div>
+        </div>
+      </div>
+      <!-- Stat cards -->
+      <div class="stats-grid" id="dash-stats"></div>
+      <!-- Charts -->
+      <div class="grid-2" style="margin-bottom:18px">
+        <div class="chart-card">
+          <div class="chart-title">Reports by Zone</div>
+          <div class="chart-sub">Submitted vs Fixed — current period</div>
+          <div class="bar-group" id="zone-bar-chart"></div>
+          <div class="chart-legend" style="margin-top:10px">
+            <div class="legend-item"><div class="legend-dot" style="background:var(--navy)"></div>Submitted</div>
+            <div class="legend-item"><div class="legend-dot" style="background:var(--gold)"></div>Fixed</div>
+          </div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">Severity Distribution</div>
+          <div class="chart-sub">All open reports</div>
+          <div class="donut-container" style="margin-top:12px">
+            <svg viewBox="0 0 120 120" width="130" height="130">
+              <circle id="d-bg" cx="60" cy="60" r="44" fill="none" stroke="#f3f4f6" stroke-width="16"/>
+              <circle id="d-low" cx="60" cy="60" r="44" fill="none" stroke="#22c55e" stroke-width="16" stroke-linecap="butt" transform="rotate(-90 60 60)"/>
+              <circle id="d-med" cx="60" cy="60" r="44" fill="none" stroke="#f59e0b" stroke-width="16" stroke-linecap="butt" transform="rotate(-90 60 60)"/>
+              <circle id="d-high" cx="60" cy="60" r="44" fill="none" stroke="#f97316" stroke-width="16" stroke-linecap="butt" transform="rotate(-90 60 60)"/>
+              <circle id="d-crit" cx="60" cy="60" r="44" fill="none" stroke="#ef4444" stroke-width="16" stroke-linecap="butt" transform="rotate(-90 60 60)"/>
+              <text id="d-center" x="60" y="64" text-anchor="middle" font-size="16" font-weight="800" fill="#111827"></text>
+              <text x="60" y="77" text-anchor="middle" font-size="9" fill="#9ca3af">Open</text>
+            </svg>
+            <div class="donut-legend" id="donut-legend"></div>
+          </div>
+        </div>
+      </div>
+      <!-- Recent reports -->
+      <div class="section-hdr">
+        <div class="section-title">Recent Reports</div>
+        <button class="btn btn-outline btn-sm" onclick="nav('reports')">View all →</button>
+      </div>
+      <div class="table-wrap">
+        <table><thead><tr><th class="no-sort">ID</th><th class="no-sort">Location</th><th class="no-sort">Ward</th><th class="no-sort">Severity</th><th class="no-sort">Status</th><th class="no-sort">Reported</th><th class="no-sort">Action</th></tr></thead>
+        <tbody id="dash-recent-body"></tbody></table>
+      </div>
+    </div>
+
+    <!-- ═══ REPORTS ═══ -->
+    <div class="page" id="page-reports">
+      <div class="section-hdr" style="margin-bottom:14px">
+        <div style="display:flex;align-items:center;gap:10px"><div class="section-title">All Reports</div><span class="badge b-blue" id="rep-count-badge">—</span></div>
+        <div class="hdr-actions">
+          <button class="btn btn-outline btn-sm" onclick="exportCSV()">⬇ Export CSV</button>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <div class="table-toolbar">
+          <div class="tbl-search"><span>🔍</span><input id="rep-search" placeholder="Search ID, location…" oninput="filterReports()"/></div>
+          <div class="filter-pill">📍 Zone:<select id="f-zone" onchange="filterReports()"><option value="">All Zones</option></select></div>
+          <div class="filter-pill">🚦 Status:<select id="f-status" onchange="filterReports()"><option value="">All</option><option value="pending">Pending</option><option value="assigned">Assigned</option><option value="in_repair">In Repair</option><option value="fixed">Fixed</option><option value="sla_breach">SLA Breach</option></select></div>
+          <div class="filter-pill">⚠️ Severity:<select id="f-sev" onchange="filterReports()"><option value="">All</option><option value="critical">Critical</option><option value="high">High</option><option value="medium">Medium</option><option value="low">Low</option></select></div>
+          <button class="btn btn-outline btn-sm" style="margin-left:auto" onclick="nav('map')">🗺️ Map view</button>
+        </div>
+        <div class="bulk-bar" id="bulk-bar">
+          <span id="bulk-count">0 selected</span>
+          <button class="btn btn-sm btn-navy btn-primary" id="bulk-assign-btn" onclick="bulkAssign()">Assign AE</button>
+          <button class="btn btn-sm btn-amber" id="bulk-escalate-btn" onclick="bulkEscalate()">Escalate</button>
+          <button class="btn btn-sm btn-outline" onclick="clearBulk()">Clear</button>
+        </div>
+        <table>
+          <thead><tr>
+            <th class="no-sort" style="width:32px"><input type="checkbox" id="select-all" onchange="toggleSelectAll(this)"/></th>
+            <th class="no-sort">Photo</th>
+            <th onclick="sortReports('id')" id="th-id">ID</th>
+            <th class="no-sort">Location</th>
+            <th class="no-sort">Ward / Zone</th>
+            <th onclick="sortReports('severity')" id="th-severity">Severity</th>
+            <th class="no-sort">Road</th>
+            <th class="no-sort">Status</th>
+            <th class="no-sort">AE</th>
+            <th onclick="sortReports('ts')" id="th-reported">Reported</th>
+            <th class="no-sort"></th>
+          </tr></thead>
+          <tbody id="rep-body"></tbody>
+        </table>
+        <div class="pagination" id="rep-pagination"></div>
+      </div>
+    </div>
+
+    <!-- ═══ MAP ═══ -->
+    <div class="page" id="page-map">
+      <div class="section-hdr" style="margin-bottom:12px">
+        <div class="section-title">Live Pothole Map — Hyderabad</div>
+        <div class="hdr-actions">
+          <button class="btn btn-outline btn-sm" onclick="toggleWards()">🗂️ Ward Boundaries</button>
+          <div class="period-tabs"><div class="period-tab active">Today</div><div class="period-tab" onclick="this.parentElement.querySelectorAll('.period-tab').forEach(t=>t.classList.remove('active'));this.classList.add('active')">This Week</div><div class="period-tab" onclick="this.parentElement.querySelectorAll('.period-tab').forEach(t=>t.classList.remove('active'));this.classList.add('active')">All</div></div>
+        </div>
+      </div>
+      <!-- Filter bar -->
+      <div class="table-toolbar" style="background:#fff;border-radius:10px;margin-bottom:12px;border:1px solid var(--border)">
+        <div class="filter-pill">📍 Zone:<select id="map-f-zone" onchange="renderMap()"><option value="">All Zones</option></select></div>
+        <div class="filter-pill">⚠️ Severity:<select id="map-f-sev" onchange="renderMap()"><option value="">All</option><option value="critical">Critical</option><option value="high">High</option><option value="medium">Medium</option><option value="low">Low</option></select></div>
+        <div class="filter-pill">🚦 Status:<select id="map-f-status" onchange="renderMap()"><option value="">All</option><option value="pending">Pending</option><option value="assigned">Assigned</option><option value="in_repair">In Repair</option><option value="fixed">Fixed</option><option value="sla_breach">SLA Breach</option></select></div>
+      </div>
+      <div class="map-wrap" id="map-wrap">
+        <div class="map-bg"></div>
+        <div class="map-grid"></div>
+        <!-- Heatmap overlay -->
+        <canvas id="map-heatmap" class="map-heatmap" style="position:absolute;inset:0;width:100%;height:100%"></canvas>
+        <!-- Roads -->
+        <div class="map-road-h" style="top:38%;height:14px"></div>
+        <div class="map-road-h" style="top:62%;height:14px"></div>
+        <div class="map-road-v" style="left:30%;width:14px"></div>
+        <div class="map-road-v" style="left:60%;width:14px"></div>
+        <!-- Ward boundaries -->
+        <div class="map-ward" id="ward-14" style="top:25%;left:22%;width:18%;height:22%"><div class="map-ward-label">Ward 14</div></div>
+        <div class="map-ward" id="ward-7" style="top:20%;left:45%;width:16%;height:20%"><div class="map-ward-label">Ward 7</div></div>
+        <div class="map-ward" id="ward-22" style="top:55%;left:28%;width:20%;height:22%"><div class="map-ward-label">Ward 22</div></div>
+        <div class="map-ward" id="ward-31" style="top:52%;left:55%;width:18%;height:22%"><div class="map-ward-label">Ward 31</div></div>
+        <!-- Pins rendered by JS -->
+        <div id="map-pins"></div>
+        <!-- Popup -->
+        <div class="map-popup" id="map-popup">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+            <div class="mp-title" id="pp-id">—</div>
+            <button class="btn btn-xs btn-outline" onclick="openDrawerById(document.getElementById('pp-id').textContent)">View →</button>
+          </div>
+          <div class="mp-row"><span>Location</span><span class="mp-val" id="pp-loc">—</span></div>
+          <div class="mp-row"><span>Severity</span><span id="pp-sev">—</span></div>
+          <div class="mp-row"><span>Status</span><span id="pp-status">—</span></div>
+          <div class="mp-row"><span>AE</span><span class="mp-val" id="pp-ae">—</span></div>
+        </div>
+        <!-- Search -->
+        <div class="map-search"><span>🔍</span><input id="map-search" placeholder="Ward or address…" oninput="mapSearch(this.value)"/></div>
+        <!-- Stats top-right -->
+        <div class="map-stats-box" id="map-stats-box">
+          <div class="map-stat"><div class="ms-val" id="ms-open">—</div><div class="ms-lbl">Open</div></div>
+          <div class="map-stat"><div class="ms-val" style="color:var(--red)" id="ms-crit">—</div><div class="ms-lbl">Critical</div></div>
+          <div class="map-stat"><div class="ms-val" style="color:var(--green)" id="ms-fixed">—</div><div class="ms-lbl">Fixed</div></div>
+        </div>
+        <!-- Controls -->
+        <div class="map-controls">
+          <button class="map-ctrl" id="zoom-in-btn" onclick="mapZoom(1)">＋</button>
+          <button class="map-ctrl" id="zoom-out-btn" onclick="mapZoom(-1)">－</button>
+          <button class="map-ctrl" id="heatmap-btn" onclick="toggleHeatmap()" title="Heatmap / Pins">🔥</button>
+        </div>
+        <!-- Legend bottom-left (after search) -->
+        <div class="map-legend-box" style="bottom:12px;left:12px">
+          <div class="ml-title">Severity</div>
+          <div class="ml-item"><div class="ml-dot" style="background:#ef4444"></div>Critical</div>
+          <div class="ml-item"><div class="ml-dot" style="background:#f97316"></div>High</div>
+          <div class="ml-item"><div class="ml-dot" style="background:#f59e0b"></div>Medium</div>
+          <div class="ml-item"><div class="ml-dot" style="background:#22c55e"></div>Low / Fixed</div>
+        </div>
+        <div style="position:absolute;bottom:12px;right:12px;font-size:10px;color:rgba(0,0,0,.3)">© GHMC Mana Rasta</div>
+      </div>
+    </div>
+
+    <!-- ═══ OFFICERS ═══ -->
+    <div class="page" id="page-officers">
+      <div class="section-hdr" style="margin-bottom:12px">
+        <div class="section-title">Ward Officers</div>
+      </div>
+      <div class="officer-search"><span>🔍</span><input placeholder="Search officer name or ward…" oninput="filterOfficers(this.value)"/></div>
+      <div class="zone-tabs" id="off-zone-tabs"></div>
+      <div id="officers-list"></div>
+    </div>
+
+    <!-- ═══ SLA ═══ -->
+    <div class="page" id="page-sla">
+      <div class="section-hdr" style="margin-bottom:14px">
+        <div class="section-title">SLA Tracker</div>
+        <button class="btn btn-outline btn-sm" onclick="window.print()">⬇ Export Report</button>
+      </div>
+      <div class="grid-4" style="margin-bottom:18px" id="sla-cards"></div>
+      <div class="section-title" style="margin-bottom:10px">⚠️ Breached Reports — Immediate Action Required</div>
+      <div class="table-wrap">
+        <table><thead><tr><th class="no-sort">ID</th><th class="no-sort">Location</th><th class="no-sort">Severity</th><th class="no-sort">AE Assigned</th><th class="no-sort">Reported</th><th class="no-sort">SLA</th><th class="no-sort">Overdue By</th><th class="no-sort">Action</th></tr></thead>
+        <tbody id="sla-breach-body"></tbody></table>
+      </div>
+    </div>
+
+    <!-- ═══ FRAUD ═══ -->
+    <div class="page" id="page-fraud">
+      <div class="section-hdr" style="margin-bottom:14px">
+        <div class="section-title">Fraud Detection</div>
+        <span class="badge b-red" id="fraud-active-count" style="padding:5px 12px;font-size:12px">2 Active</span>
+      </div>
+      <div class="fraud-tabs">
+        <div class="fraud-tab active" onclick="fraudTab('active',this)">Active Alerts</div>
+        <div class="fraud-tab" onclick="fraudTab('history',this)">History</div>
+        <div class="fraud-tab" onclick="fraudTab('rules',this)">Auto-Flag Rules</div>
+      </div>
+      <div id="fraud-active-panel"><div id="fraud-alerts-list"></div>
+        <div class="section-title" style="margin:16px 0 10px">Risk Scores — Flagged Users</div>
+        <div class="table-wrap"><table><thead><tr><th class="no-sort">User</th><th class="no-sort">Reports</th><th class="no-sort">Flags</th>
+          <th class="no-sort">Risk Score <span class="tooltip">ⓘ<span class="tooltip-text">Score based on duplicate proximity, submission speed, GPS accuracy, and report volume vs baseline.</span></span></th>
+          <th class="no-sort">Last Activity</th><th class="no-sort">Action</th></tr></thead>
+        <tbody id="fraud-risk-body"></tbody></table></div>
+      </div>
+      <div id="fraud-history-panel" style="display:none">
+        <div class="table-wrap"><table><thead><tr><th class="no-sort">ID</th><th class="no-sort">Description</th><th class="no-sort">Resolution</th><th class="no-sort">Date</th><th class="no-sort">Score</th></tr></thead>
+        <tbody id="fraud-history-body"></tbody></table></div>
+      </div>
+      <div id="fraud-rules-panel" style="display:none">
+        <div style="margin-bottom:12px;font-size:12px;color:var(--muted)">Rules applied automatically to all new submissions. Changes take effect immediately.</div>
+        <div id="fraud-rules-list"></div>
+      </div>
+    </div>
+
+    <!-- ═══ ANALYTICS ═══ -->
+    <div class="page" id="page-analytics">
+      <div class="section-hdr" style="margin-bottom:14px">
+        <div class="section-title">Analytics</div>
+        <div class="hdr-actions">
+          <button class="btn btn-outline btn-sm" id="ana-prev" onclick="anaMonth(-1)">←</button>
+          <span id="ana-month-label" style="font-size:13px;font-weight:600;color:var(--text);padding:0 4px">April 2026</span>
+          <button class="btn btn-outline btn-sm" id="ana-next" onclick="anaMonth(1)">→</button>
+          <button class="btn btn-outline btn-sm" onclick="window.print()">⬇ Export PDF</button>
+        </div>
+      </div>
+      <div class="stats-grid" id="ana-stats"></div>
+      <div class="grid-2" style="margin-bottom:18px">
+        <!-- Trend line -->
+        <div class="chart-card">
+          <div class="chart-title">12-Month Trend</div>
+          <div class="chart-sub">Reported vs Fixed</div>
+          <svg id="trend-svg" width="100%" height="140" style="overflow:visible;margin-top:8px"></svg>
+          <div class="chart-legend" style="margin-top:6px">
+            <div class="legend-item"><div class="legend-dot" style="background:var(--navy)"></div>Reported</div>
+            <div class="legend-item"><div class="legend-dot" style="background:var(--green)"></div>Fixed</div>
+          </div>
+        </div>
+        <!-- Zone comparison -->
+        <div class="chart-card">
+          <div class="chart-title">Zone Comparison</div>
+          <div class="chart-sub">Reported / Fixed / Breaches</div>
+          <div class="bar-group" id="zone-compare-chart" style="height:150px;margin-top:8px"></div>
+          <div class="chart-legend" style="margin-top:8px">
+            <div class="legend-item"><div class="legend-dot" style="background:var(--navy)"></div>Reported</div>
+            <div class="legend-item"><div class="legend-dot" style="background:var(--green)"></div>Fixed</div>
+            <div class="legend-item"><div class="legend-dot" style="background:var(--red)"></div>Breaches</div>
+          </div>
+        </div>
+      </div>
+      <!-- Peak hours heatmap -->
+      <div class="chart-card" style="margin-bottom:18px">
+        <div class="chart-title">Peak Submission Hours</div>
+        <div class="chart-sub">Reports per hour × day (last 30 days)</div>
+        <div id="heatmap-container" style="margin-top:12px;overflow-x:auto"></div>
+      </div>
+      <!-- Day of week -->
+      <div class="chart-card">
+        <div class="chart-title">Reports by Day of Week</div>
+        <div class="chart-sub">Average over period</div>
+        <div id="dow-chart" style="margin-top:10px"></div>
+      </div>
+    </div>
+
+    <!-- ═══ LEADERBOARD ═══ -->
+    <div class="page" id="page-leaderboard">
+      <div class="section-hdr" style="margin-bottom:14px">
+        <div class="section-title">Citizen Leaderboard</div>
+        <div class="hdr-actions">
+          <div class="period-tabs" id="lb-period">
+            <div class="period-tab active" onclick="setLbFilter('period','weekly',this)">This Week</div>
+            <div class="period-tab" onclick="setLbFilter('period','monthly',this)">This Month</div>
+            <div class="period-tab" onclick="setLbFilter('period','alltime',this)">All Time</div>
+          </div>
+          <div class="period-tabs" id="lb-scope">
+            <div class="period-tab active" onclick="setLbFilter('scope','ward',this)">Ward</div>
+            <div class="period-tab" onclick="setLbFilter('scope','zone',this)">Zone</div>
+            <div class="period-tab" onclick="setLbFilter('scope','city',this)">City</div>
+          </div>
+        </div>
+      </div>
+      <div class="grid-2">
+        <div>
+          <div class="section-title" id="lb-left-title" style="margin-bottom:10px">Ward 14 — This Week</div>
+          <div class="table-wrap" id="lb-left"></div>
+        </div>
+        <div>
+          <div class="section-title" style="margin-bottom:10px">Hyderabad City — All Time</div>
+          <div class="table-wrap" id="lb-right"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ ADMIN ═══ -->
+    <div class="page" id="page-admin">
+      <div class="section-hdr" style="margin-bottom:14px">
+        <div class="section-title">Admin — Role Management</div>
+        <button class="btn btn-primary btn-sm" onclick="showModal('add-user-modal')">+ Add Officer</button>
+      </div>
+      <div class="table-wrap">
+        <div class="table-toolbar">
+          <div class="tbl-search"><span>🔍</span><input placeholder="Search by name or email…" oninput="filterAdminUsers(this.value)"/></div>
+          <div class="filter-pill">Role:<select onchange="filterAdminRole(this.value)"><option value="">All Roles</option><option value="sysadmin">System Admin</option><option value="commissioner">Commissioner</option><option value="zone_ee">Zone EE</option><option value="circle_dee">Circle DEE</option><option value="ward_ae">Ward AE</option></select></div>
+        </div>
+        <table>
+          <thead><tr><th class="no-sort">Name</th><th class="no-sort">Email</th><th class="no-sort">Role</th><th class="no-sort">Scope</th><th class="no-sort">Actions</th></tr></thead>
+          <tbody id="admin-users-body"></tbody>
+        </table>
+      </div>
+    </div>
+
+    </div><!-- /content -->
+  </div><!-- /main -->
+</div><!-- /app-shell -->
+
+<!-- ─── DRAWER ─── -->
+<div id="drawer-overlay" onclick="closeDrawer()"></div>
+<div id="drawer">
+  <div class="drawer-hdr">
+    <div class="drawer-title" id="drawer-title">Report Detail</div>
+    <button class="drawer-close" onclick="closeDrawer()">✕</button>
+  </div>
+  <div class="drawer-body" id="drawer-body"></div>
+  <div class="drawer-footer" id="drawer-footer"></div>
+</div>
+
+<!-- ─── MODALS ─── -->
+<div id="modal-overlay" onclick="closeModal()">
+  <div class="modal" onclick="event.stopPropagation()" id="modal-box">
+    <div id="modal-content"></div>
+  </div>
+</div>
+
+<script>
+
+const MOCK = {
+  users:[
+    {id:1,email:'sysadmin@ghmc.gov.in',password:'admin',name:'System Admin',role:'sysadmin',zone:null,circle:null,ward:null,initials:'SA'},
+    {id:2,email:'commissioner@ghmc.gov.in',password:'comm',name:'Rajesh Kumar',role:'commissioner',zone:null,circle:null,ward:null,initials:'RK'},
+    {id:3,email:'ee.kukatpally@ghmc.gov.in',password:'ee',name:'Meena Thankam',role:'zone_ee',zone:'Kukatpally',circle:null,ward:null,initials:'MT'},
+    {id:4,email:'dee.kukatpally@ghmc.gov.in',password:'dee',name:'Suresh Prasad',role:'circle_dee',zone:'Kukatpally',circle:'Kukatpally Circle',ward:null,initials:'SP'},
+    {id:5,email:'ae.ward14@ghmc.gov.in',password:'ae',name:'Venkat Rao',role:'ward_ae',zone:'Kukatpally',circle:'Kukatpally Circle',ward:'Ward 14',initials:'VR'},
+  ],
+
+  reports:[
+    {id:'MR-2025-A9F3',location:'MG Road',area:'Kukatpally',ward:'Ward 14',zone:'Kukatpally',severity:'critical',status:'assigned',roadType:'Local',ae:'Venkat R.',reported:'2h ago',ts:Date.now()-7200000,photo:'🛣️'},
+    {id:'MR-2025-B2K1',location:'Jubilee Hills Rd 36',area:'Banjara Hills',ward:'Ward 7',zone:'Khairatabad',severity:'high',status:'in_repair',roadType:'Main Road',ae:'Suresh P.',reported:'5h ago',ts:Date.now()-18000000,photo:'🛣️'},
+    {id:'MR-2025-C4L8',location:'Banjara Hills Rd 12',area:'Banjara Hills',ward:'Ward 9',zone:'Khairatabad',severity:'medium',status:'fixed',roadType:'Local',ae:'Ramesh T.',reported:'Yesterday',ts:Date.now()-86400000,photo:'🛣️'},
+    {id:'MR-2025-D7M2',location:'Secunderabad Main Rd',area:'Secunderabad',ward:'Ward 22',zone:'Secunderabad',severity:'critical',status:'sla_breach',roadType:'Highway',ae:'Venkat R.',reported:'2d ago',ts:Date.now()-172800000,photo:'🛣️'},
+    {id:'MR-2025-E1N5',location:'LB Nagar Circle',area:'LB Nagar',ward:'Ward 31',zone:'LB Nagar',severity:'medium',status:'pending',roadType:'Main Road',ae:null,reported:'3d ago',ts:Date.now()-259200000,photo:'🛣️'},
+    {id:'MR-2025-F3P9',location:'Charminar Rd',area:'Old City',ward:'Ward 45',zone:'Charminar',severity:'high',status:'in_repair',roadType:'Main Road',ae:'Salim M.',reported:'3d ago',ts:Date.now()-259200000,photo:'🛣️'},
+    {id:'MR-2025-G9Q3',location:'Dilsukhnagar Rd',area:'Dilsukhnagar',ward:'Ward 38',zone:'LB Nagar',severity:'critical',status:'sla_breach',roadType:'Main Road',ae:'Farhan A.',reported:'3d ago',ts:Date.now()-259200000,photo:'🛣️'},
+    {id:'MR-2025-H2R7',location:'Himayatnagar Ring Rd',area:'Himayatnagar',ward:'Ward 17',zone:'Khairatabad',severity:'critical',status:'sla_breach',roadType:'Highway',ae:'Priya S.',reported:'4d ago',ts:Date.now()-345600000,photo:'🛣️'},
+    {id:'MR-2025-I5S1',location:'Begumpet Main Rd',area:'Begumpet',ward:'Ward 11',zone:'Serilingampally',severity:'low',status:'fixed',roadType:'Local',ae:'Anil K.',reported:'5d ago',ts:Date.now()-432000000,photo:'🛣️'},
+    {id:'MR-2025-J7T4',location:'Ameerpet X-road',area:'Ameerpet',ward:'Ward 14',zone:'Kukatpally',severity:'high',status:'assigned',roadType:'Main Road',ae:'Venkat R.',reported:'5d ago',ts:Date.now()-432000000,photo:'🛣️'},
+    {id:'MR-2025-K1U6',location:'Koti Bus Stand Rd',area:'Koti',ward:'Ward 48',zone:'Charminar',severity:'medium',status:'pending',roadType:'Main Road',ae:null,reported:'6d ago',ts:Date.now()-518400000,photo:'🛣️'},
+    {id:'MR-2025-L3V2',location:'SR Nagar Main Rd',area:'SR Nagar',ward:'Ward 15',zone:'Kukatpally',severity:'low',status:'fixed',roadType:'Local',ae:'Venkat R.',reported:'1w ago',ts:Date.now()-604800000,photo:'🛣️'},
+  ],
+
+  officers:[
+    {initials:'VR',name:'Venkat Rao',role:'AE',wards:'Ward 14, 15',zone:'Kukatpally',circle:'Kukatpally Circle',phone:'+91 98001 11001',email:'ae.ward14@ghmc.gov.in',fixed:42,active:12,ontime:91},
+    {initials:'SP',name:'Suresh Prasad',role:'AE',wards:'Ward 16, 17',zone:'Kukatpally',circle:'Kukatpally Circle',phone:'+91 98001 11002',email:'ae.ward16@ghmc.gov.in',fixed:28,active:8,ontime:85},
+    {initials:'MT',name:'Meena Thankam',role:'DEE',wards:'Kukatpally Circle',zone:'Kukatpally',circle:'Kukatpally Circle',phone:'+91 98001 11003',email:'dee.kukatpally@ghmc.gov.in',fixed:0,active:0,ontime:100},
+    {initials:'AR',name:'Anitha Reddy',role:'AE',wards:'Ward 7, 8',zone:'Khairatabad',circle:'Khairatabad Circle',phone:'+91 98001 22001',email:'ae.ward7@ghmc.gov.in',fixed:38,active:9,ontime:88},
+    {initials:'RT',name:'Ramesh Teja',role:'AE',wards:'Ward 9, 10',zone:'Khairatabad',circle:'Khairatabad Circle',phone:'+91 98001 22002',email:'ae.ward9@ghmc.gov.in',fixed:19,active:5,ontime:79},
+    {initials:'NS',name:'Naresh Sharma',role:'DEE',wards:'Khairatabad Circle',zone:'Khairatabad',circle:'Khairatabad Circle',phone:'+91 98001 22003',email:'dee.khairatabad@ghmc.gov.in',fixed:0,active:0,ontime:100},
+    {initials:'SM',name:'Salim Mohammed',role:'AE',wards:'Ward 45, 46',zone:'Charminar',circle:'Charminar Circle',phone:'+91 98001 33001',email:'ae.ward45@ghmc.gov.in',fixed:31,active:7,ontime:82},
+    {initials:'FA',name:'Farhan Alam',role:'AE',wards:'Ward 38, 39',zone:'LB Nagar',circle:'LB Nagar Circle',phone:'+91 98001 44001',email:'ae.ward38@ghmc.gov.in',fixed:24,active:11,ontime:74},
+    {initials:'AK',name:'Anil Kumar',role:'AE',wards:'Ward 11, 12',zone:'Serilingampally',circle:'Serilingampally Circle',phone:'+91 98001 55001',email:'ae.ward11@ghmc.gov.in',fixed:36,active:6,ontime:94},
+    {initials:'PS',name:'Priya Srinivas',role:'AE',wards:'Ward 17, 18',zone:'Secunderabad',circle:'Secunderabad Circle',phone:'+91 98001 66001',email:'ae.ward17@ghmc.gov.in',fixed:22,active:4,ontime:87},
+  ],
+
+  zones:['Kukatpally','Khairatabad','Charminar','LB Nagar','Serilingampally','Secunderabad'],
+
+  fraudAlerts:[
+    {id:'F001',type:'critical',icon:'🚨',title:'Duplicate Submission Detected',desc:'User +91 98765 43210 submitted 7 reports within 50m of each other in Ward 14 within 2 hours. Possible bulk spam.',time:'Apr 15, 2026 · 10:42 AM',user:'+91 98765 43210',userId:'U-4421',riskScore:87,reports:34,flags:'7 duplicates',status:'active'},
+    {id:'F002',type:'warning',icon:'⚠️',title:'Suspicious GPS Coordinates',desc:'Report MR-2025-Z9K4 has GPS coordinates outside GHMC limits (17.2°N 78.1°E — Sangareddy district). Auto-flagged.',time:'Apr 14, 2026 · 03:18 PM',user:'+91 87654 32109',userId:'U-3318',riskScore:54,reports:12,flags:'2 outside GHMC',status:'active'},
+  ],
+  fraudHistory:[
+    {id:'F-H001',title:'Bulk submission — 12 reports, Ward 22',resolution:'User suspended 30 days',date:'Mar 28, 2026',riskScore:91},
+    {id:'F-H002',title:'Duplicate pothole — 5 reports same pothole',resolution:'4 duplicate reports rejected',date:'Mar 15, 2026',riskScore:67},
+    {id:'F-H003',title:'GPS spoof detected — coordinates in ocean',resolution:'Report rejected, user warned',date:'Feb 22, 2026',riskScore:78},
+  ],
+  fraudRules:[
+    {id:'R1',label:'Flag if > N reports within 100m in 2 hours',value:5,unit:'reports'},
+    {id:'R2',label:'Flag if GPS outside GHMC boundary',value:'Auto',unit:''},
+    {id:'R3',label:'Flag if submission speed < N seconds between reports',value:30,unit:'sec'},
+    {id:'R4',label:'Suspend after N confirmed fraud flags',value:3,unit:'flags'},
+  ],
+
+  leaderboard:{
+    ward:{
+      weekly:[
+        {rank:1,name:'Priya Sharma',pts:220,reports:11,you:false,badge:'🛡️'},
+        {rank:2,name:'Vikram N.',pts:180,reports:9,you:false,badge:''},
+        {rank:3,name:'Ananya R.',pts:140,reports:7,you:false,badge:''},
+        {rank:4,name:'Advaith',pts:80,reports:4,you:true,badge:'🔍'},
+        {rank:5,name:'Sai Kumar',pts:60,reports:3,you:false,badge:''},
+      ],
+      monthly:[
+        {rank:1,name:'Advaith',pts:340,reports:17,you:true,badge:'🛡️'},
+        {rank:2,name:'Priya Sharma',pts:280,reports:14,you:false,badge:'🛡️'},
+        {rank:3,name:'Vikram N.',pts:220,reports:11,you:false,badge:''},
+        {rank:4,name:'Sai Kumar',pts:160,reports:8,you:false,badge:''},
+        {rank:5,name:'Meena T.',pts:120,reports:6,you:false,badge:''},
+      ],
+      alltime:[
+        {rank:1,name:'Priya Sharma',pts:1880,reports:94,you:false,badge:'👑'},
+        {rank:2,name:'Vikram N.',pts:1620,reports:81,you:false,badge:'🌟'},
+        {rank:3,name:'Advaith',pts:1260,reports:63,you:true,badge:'🛡️'},
+        {rank:4,name:'Sai Kumar',pts:940,reports:47,you:false,badge:''},
+        {rank:5,name:'Meena T.',pts:620,reports:31,you:false,badge:''},
+      ],
+    },
+    zone:{
+      weekly:[
+        {rank:1,name:'Vikram Nair',pts:280,reports:14,you:false,badge:'🛡️'},
+        {rank:2,name:'Priya Sharma',pts:220,reports:11,you:false,badge:''},
+        {rank:3,name:'Ananya R.',pts:200,reports:10,you:false,badge:''},
+        {rank:4,name:'Advaith',pts:80,reports:4,you:true,badge:'🔍'},
+        {rank:5,name:'Sai Kumar',pts:120,reports:6,you:false,badge:''},
+        {rank:6,name:'Meena T.',pts:100,reports:5,you:false,badge:''},
+        {rank:7,name:'Ravi K.',pts:80,reports:4,you:false,badge:''},
+      ],
+      monthly:[
+        {rank:1,name:'Vikram Nair',pts:960,reports:48,you:false,badge:'🌟'},
+        {rank:2,name:'Ananya R.',pts:820,reports:41,you:false,badge:''},
+        {rank:3,name:'Advaith',pts:440,reports:22,you:true,badge:'🛡️'},
+        {rank:4,name:'Sai Kumar',pts:380,reports:19,you:false,badge:''},
+        {rank:5,name:'Priya Sharma',pts:340,reports:17,you:false,badge:''},
+      ],
+      alltime:[
+        {rank:1,name:'Vikram Nair',pts:6240,reports:312,you:false,badge:'👑'},
+        {rank:2,name:'Ananya R.',pts:5560,reports:278,you:false,badge:'🌟'},
+        {rank:3,name:'Sai Kumar',pts:4020,reports:201,you:false,badge:''},
+        {rank:4,name:'Meena T.',pts:3560,reports:178,you:false,badge:''},
+        {rank:5,name:'Advaith',pts:1260,reports:63,you:true,badge:'🛡️'},
+      ],
+    },
+    city:{
+      weekly:[
+        {rank:1,name:'Arjun Prasad',pts:620,reports:31,you:false,badge:'👑'},
+        {rank:2,name:'Deepa S.',pts:540,reports:27,you:false,badge:'🌟'},
+        {rank:3,name:'Kiran B.',pts:480,reports:24,you:false,badge:''},
+        {rank:4,name:'Sunita R.',pts:400,reports:20,you:false,badge:''},
+        {rank:7,name:'Advaith',pts:80,reports:4,you:true,badge:'🔍'},
+      ],
+      monthly:[
+        {rank:1,name:'Arjun Prasad',pts:2240,reports:112,you:false,badge:'👑'},
+        {rank:2,name:'Deepa S.',pts:1940,reports:97,you:false,badge:'🌟'},
+        {rank:3,name:'Kiran B.',pts:1680,reports:84,you:false,badge:''},
+        {rank:8,name:'Advaith',pts:440,reports:22,you:true,badge:'🛡️'},
+      ],
+      alltime:[
+        {rank:1,name:'Arjun Prasad',pts:17820,reports:891,you:false,badge:'👑'},
+        {rank:2,name:'Deepa S.',pts:14880,reports:744,you:false,badge:'👑'},
+        {rank:3,name:'Kiran B.',pts:12240,reports:612,you:false,badge:'🌟'},
+        {rank:4,name:'Sunita R.',pts:10060,reports:503,you:false,badge:'🌟'},
+        {rank:8,name:'Advaith',pts:1260,reports:63,you:true,badge:'🛡️'},
+      ],
+    },
+  },
+
+  analytics:{
+    months:['May','Jun','Jul','Aug','Sep','Oct','Nov','Dec','Jan','Feb','Mar','Apr'],
+    reported:[98,112,134,156,143,167,189,201,178,195,214,228],
+    fixed:[72,88,105,124,118,141,162,177,154,171,189,204],
+    zones:{
+      Kukatpally:{reported:228,fixed:189,breach:8},
+      Khairatabad:{reported:187,fixed:152,breach:5},
+      Charminar:{reported:156,fixed:121,breach:6},
+      'LB Nagar':{reported:143,fixed:98,breach:9},
+      Serilingampally:{reported:128,fixed:87,breach:4},
+      Secunderabad:{reported:112,fixed:76,breach:3},
+    },
+    heatmap: (()=>{
+      const d=[]; const days=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+      for(let h=0;h<24;h++){
+        const row=[];
+        for(let d2=0;d2<7;d2++){
+          let v=Math.random()*80;
+          if(h>=9&&h<=18&&d2<5)v+=40;
+          if(h>=7&&h<=9)v+=20;
+          if(h>=17&&h<=19)v+=25;
+          row.push(Math.min(100,Math.round(v)));
+        }
+        d.push(row);
+      }
+      return d;
+    })(),
+    dayLabels:['Mon','Tue','Wed','Thu','Fri','Sat','Sun'],
+  }
+};
+
+// ── APP State ──────────────────────────────────────────────────
+const APP = {
+  user: null,
+  page: 'dashboard',
+  lb: {period:'weekly', scope:'ward'},
+  dash: {period:'month'},
+  ana: {monthIdx: 11},
+  reports: {filtered:[], sorted:[], page:1, perPage:8, sortCol:'ts', sortDir:-1},
+  map: {zoom:1, wardsVisible:false, heatmapVisible:false},
+  officers: {zone:'all', query:''},
+  admin: {users:[], filtered:[]},
+};
+
+const ROLE_LABELS = {sysadmin:'System Admin',commissioner:'Commissioner',zone_ee:'Zone EE',circle_dee:'Circle DEE',ward_ae:'Ward AE'};
+const SEV_ORDER = {critical:0,high:1,medium:2,low:3};
+const SEV_BADGE = {critical:'<span class="badge b-red">🔴 Critical</span>',high:'<span class="badge b-orange">🟠 High</span>',medium:'<span class="badge b-amber">🟡 Medium</span>',low:'<span class="badge b-green">🟢 Low</span>'};
+const STATUS_BADGE = {pending:'<span class="badge b-gray">📥 Pending</span>',assigned:'<span class="badge b-amber">⏳ Assigned</span>',in_repair:'<span class="badge b-blue">🔧 In Repair</span>',fixed:'<span class="badge b-green">✅ Fixed</span>',sla_breach:'<span class="badge b-red">🚨 SLA Breach</span>'};
+const SEV_COLOR = {critical:'#ef4444',high:'#f97316',medium:'#f59e0b',low:'#22c55e'};
+
+// ── Auth ──────────────────────────────────────────────────────
+function doLogin(){
+  const email = document.getElementById('login-email').value.trim();
+  const pass  = document.getElementById('login-pass').value;
+  const user  = MOCK.users.find(u => u.email===email && u.password===pass);
+  const err   = document.getElementById('login-error');
+  if(!user){ err.classList.add('show'); return; }
+  err.classList.remove('show');
+  APP.user = user;
+  if(document.getElementById('remember-me').checked){
+    localStorage.setItem('mr_user', JSON.stringify({email,pass}));
+  }
+  startApp();
+}
+
+function doLogout(){
+  APP.user = null;
+  localStorage.removeItem('mr_user');
+  document.getElementById('login-page').classList.remove('hidden');
+  document.getElementById('app-shell').classList.add('hidden');
+  document.getElementById('login-email').value='';
+  document.getElementById('login-pass').value='';
+}
+
+function tryAutoLogin(){
+  const saved = localStorage.getItem('mr_user');
+  if(saved){
+    const {email,pass} = JSON.parse(saved);
+    const user = MOCK.users.find(u=>u.email===email&&u.password===pass);
+    if(user){ APP.user=user; startApp(); return; }
+  }
+}
+
+function startApp(){
+  document.getElementById('login-page').classList.add('hidden');
+  document.getElementById('app-shell').classList.remove('hidden');
+  buildSidebar();
+  updateTopbarUser();
+  populateZoneFilters();
+  nav('dashboard');
+}
+
+// ── Role helpers ───────────────────────────────────────────────
+function canSee(minRole){
+  const levels = ['ward_ae','circle_dee','zone_ee','commissioner','sysadmin'];
+  return levels.indexOf(APP.user.role) >= levels.indexOf(minRole);
+}
+function visibleReports(){
+  return MOCK.reports.filter(r=>{
+    if(APP.user.role==='ward_ae') return r.ward===APP.user.ward;
+    if(APP.user.role==='circle_dee') return r.zone===APP.user.zone;
+    if(APP.user.role==='zone_ee') return r.zone===APP.user.zone;
+    return true;
+  });
+}
+function visibleOfficers(){
+  return MOCK.officers.filter(o=>{
+    if(APP.user.role==='ward_ae') return o.zone===APP.user.zone;
+    if(APP.user.role==='circle_dee') return o.circle===APP.user.circle;
+    if(APP.user.role==='zone_ee') return o.zone===APP.user.zone;
+    return true;
+  });
+}
+function visibleZones(){
+  if(APP.user.role==='ward_ae'||APP.user.role==='circle_dee'||APP.user.role==='zone_ee') return [APP.user.zone];
+  return MOCK.zones;
+}
+
+// ── Sidebar ────────────────────────────────────────────────────
+function buildSidebar(){
+  const nav = [
+    {section:'Overview'},
+    {id:'dashboard',icon:'📊',label:'Dashboard'},
+    {id:'reports',icon:'📋',label:'Reports',badge:'reports'},
+    {id:'map',icon:'🗺️',label:'Live Map'},
+    {section:'Management'},
+    {id:'officers',icon:'👷',label:'Officers'},
+    {id:'sla',icon:'⏱️',label:'SLA Tracker',badge:'sla',badgeClass:'amber'},
+    {id:'fraud',icon:'🚨',label:'Fraud Detection',badge:'fraud',minRole:'sysadmin'},
+    {section:'Insights'},
+    {id:'analytics',icon:'📈',label:'Analytics'},
+    {id:'leaderboard',icon:'🏆',label:'Leaderboard'},
+    {section:'Admin',minRole:'commissioner'},
+    {id:'admin',icon:'⚙️',label:'Admin Panel',minRole:'commissioner'},
+  ];
+  const container = document.getElementById('sidebar-nav');
+  container.innerHTML='';
+  nav.forEach(item=>{
+    if(item.minRole && !canSee(item.minRole)) return;
+    if(item.section){
+      container.innerHTML += `<div class="nav-section">${item.section}</div>`;
+      return;
+    }
+    const badge = item.badge ? getBadgeCount(item.badge) : 0;
+    const badgeHtml = badge ? `<span class="nav-badge ${item.badgeClass||''}">${badge}</span>` : '';
+    container.innerHTML += `<div class="nav-item" id="nav-${item.id}" onclick="nav('${item.id}')"><span class="nav-icon">${item.icon}</span>${item.label}${badgeHtml}</div>`;
+  });
+}
+function getBadgeCount(type){
+  if(type==='reports') return visibleReports().filter(r=>r.status==='pending').length;
+  if(type==='sla') return visibleReports().filter(r=>r.status==='sla_breach').length;
+  if(type==='fraud') return MOCK.fraudAlerts.filter(a=>a.status==='active').length;
+  return 0;
+}
+function updateTopbarUser(){
+  const u = APP.user;
+  document.getElementById('s-avatar').textContent = u.initials;
+  document.getElementById('s-name').textContent = u.name;
+  document.getElementById('s-role').textContent = ROLE_LABELS[u.role];
+  document.getElementById('tb-avatar').textContent = u.initials;
+  document.getElementById('tb-name').textContent = u.name;
+  document.getElementById('tb-role-lbl').textContent = ROLE_LABELS[u.role];
+}
+
+// ── Router ─────────────────────────────────────────────────────
+const PAGE_TITLES = {dashboard:'Dashboard',reports:'Reports',map:'Live Map',officers:'Officers',sla:'SLA Tracker',fraud:'Fraud Detection',analytics:'Analytics',leaderboard:'Leaderboard',admin:'Admin Panel'};
+function nav(page){
+  closeDropdowns();
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  const pg = document.getElementById('page-'+page);
+  if(!pg) return;
+  pg.classList.add('active');
+  const ni = document.getElementById('nav-'+page);
+  if(ni) ni.classList.add('active');
+  document.getElementById('tb-title').textContent = PAGE_TITLES[page]||page;
+  APP.page = page;
+  // Init pages
+  if(page==='dashboard') renderDashboard();
+  if(page==='reports') renderReports();
+  if(page==='map') renderMap();
+  if(page==='officers') renderOfficers();
+  if(page==='sla') renderSLA();
+  if(page==='fraud') renderFraud();
+  if(page==='analytics') renderAnalytics();
+  if(page==='leaderboard') renderLeaderboard();
+  if(page==='admin') renderAdmin();
+}
+
+// ── Dropdowns ──────────────────────────────────────────────────
+function toggleDropdown(id){ const el=document.getElementById(id); const isOpen=el.classList.contains('open'); closeDropdowns(); if(!isOpen) el.classList.add('open'); }
+function closeDropdowns(){ document.querySelectorAll('.tb-dropdown, .search-results').forEach(d=>d.classList.remove('open')); }
+document.addEventListener('click',e=>{
+  if(!e.target.closest('.tb-right')) closeDropdowns();
+});
+
+// ── Search ─────────────────────────────────────────────────────
+const SEARCH_RESULTS_MOCK = [
+  {icon:'📋',label:'MR-2025-A9F3 — MG Road, Kukatpally',type:'report',id:'MR-2025-A9F3'},
+  {icon:'📋',label:'MR-2025-D7M2 — Secunderabad (SLA Breach)',type:'report',id:'MR-2025-D7M2'},
+  {icon:'🗺️',label:'Ward 14 — Kukatpally Zone',type:'map'},
+  {icon:'👷',label:'Venkat Rao — AE Ward 14',type:'officer'},
+];
+function setupSearch(){
+  const box = document.getElementById('search-box');
+  const results = document.getElementById('search-results');
+  const label = document.getElementById('search-label');
+  box.addEventListener('click', ()=>{
+    const input = document.createElement('input');
+    input.style.cssText='border:none;background:transparent;outline:none;font-size:13px;flex:1;color:var(--text);';
+    input.placeholder='Search…';
+    label.replaceWith(input);
+    input.focus();
+    input.addEventListener('input', ()=>{
+      const q = input.value.trim().toLowerCase();
+      if(!q){ results.classList.remove('open'); return; }
+      const filtered = SEARCH_RESULTS_MOCK.filter(r=>r.label.toLowerCase().includes(q));
+      if(!filtered.length){ results.classList.remove('open'); return; }
+      results.innerHTML = `<div class="search-section">Results</div>` + filtered.map(r=>`<div class="search-item" onclick="searchGo('${r.type}','${r.id||''}')"><span class="search-item-icon">${r.icon}</span>${r.label}</div>`).join('');
+      results.classList.add('open');
+    });
+    input.addEventListener('blur', ()=>{ setTimeout(()=>{ results.classList.remove('open'); },200); });
+  });
+}
+function searchGo(type, id){
+  closeDropdowns();
+  if(type==='report'){ nav('reports'); setTimeout(()=>openDrawerById(id),300); }
+  else if(type==='map') nav('map');
+  else if(type==='officer') nav('officers');
+}
+document.addEventListener('keydown', e=>{
+  if((e.metaKey||e.ctrlKey)&&e.key==='k'){ e.preventDefault(); document.getElementById('search-box').click(); }
+});
+
+// ── Zone filter population ─────────────────────────────────────
+function populateZoneFilters(){
+  const zones = visibleZones();
+  ['f-zone','map-f-zone'].forEach(id=>{
+    const sel=document.getElementById(id); if(!sel) return;
+    sel.innerHTML='<option value="">All Zones</option>'+zones.map(z=>`<option>${z}</option>`).join('');
+  });
+}
+
+// ── DASHBOARD ─────────────────────────────────────────────────
+function setDashPeriod(p, el){ APP.dash.period=p; document.querySelectorAll('#dash-period .period-tab').forEach(t=>t.classList.remove('active')); el.classList.add('active'); renderDashboard(); }
+function renderDashboard(){
+  const reps = visibleReports();
+  renderQuickActions(reps);
+  renderStatCards(reps);
+  renderZoneBarChart(reps);
+  renderDonut(reps);
+  renderDashRecent(reps);
+}
+function renderQuickActions(reps){
+  const unassigned = reps.filter(r=>r.status==='pending').length;
+  const breaches   = reps.filter(r=>r.status==='sla_breach').length;
+  const fraud      = canSee('sysadmin') ? MOCK.fraudAlerts.filter(a=>a.status==='active').length : 0;
+  let html = `<div class="qa-chip" onclick="nav('reports')">📋 Unassigned <span class="qa-count ${unassigned>0?'danger':''}">${unassigned}</span></div>`;
+  html    += `<div class="qa-chip warn" onclick="nav('sla')">⚠️ SLA Breaches <span class="qa-count ${breaches>0?'danger':''}">${breaches}</span></div>`;
+  if(canSee('sysadmin')) html += `<div class="qa-chip danger" onclick="nav('fraud')">🚨 Fraud Alerts <span class="qa-count">${fraud}</span></div>`;
+  document.getElementById('qa-strip').innerHTML = html;
+}
+function renderStatCards(reps){
+  const total  = reps.length;
+  const fixed  = reps.filter(r=>r.status==='fixed').length;
+  const breach = reps.filter(r=>r.status==='sla_breach').length;
+  const open   = reps.filter(r=>r.status!=='fixed').length;
+  const cards = [
+    {label:'Total Reports',value:total,delta:'↑ 12% vs last month',deltaClass:'delta-up',icon:'📋',sparkColor:'#002B5C'},
+    {label:'Fixed This Month',value:fixed,delta:'↑ 8% vs last month',deltaClass:'delta-up',icon:'✅',sparkColor:'#058541',valColor:'#058541'},
+    {label:'SLA Breaches',value:breach,delta:'↑ '+breach+' breach'+(breach!==1?'es':''),deltaClass:breach>0?'delta-down':'delta-up',icon:'⚠️',sparkColor:'#ef4444',valColor:breach>0?'#ef4444':'inherit'},
+    {label:'Open Reports',value:open,delta:open+' need attention',deltaClass:'delta-up',icon:'📂',sparkColor:'#F5A623',valColor:'#F5A623'},
+  ];
+  document.getElementById('dash-stats').innerHTML = cards.map(c=>`
+    <div class="stat-card">
+      <div class="stat-label">${c.label} <span style="float:right;font-size:20px">${c.icon}</span></div>
+      <div class="stat-value" style="color:${c.valColor||'var(--text)'}">${c.value.toLocaleString()}</div>
+      <div class="stat-delta ${c.deltaClass}" style="margin-bottom:6px">${c.delta}</div>
+      ${sparklineSVG([Math.floor(c.value*.6),Math.floor(c.value*.65),Math.floor(c.value*.7),Math.floor(c.value*.72),Math.floor(c.value*.8),Math.floor(c.value*.9),c.value],c.sparkColor)}
+    </div>`).join('');
+}
+function sparklineSVG(vals,color){
+  const max=Math.max(...vals)||1; const min=Math.min(...vals);
+  const h=28,w=80; const range=max-min||1;
+  const pts=vals.map((v,i)=>`${Math.round(i*(w/(vals.length-1)))},${Math.round(h-((v-min)/range)*h)}`).join(' ');
+  return `<svg class="sparkline" viewBox="0 0 ${w} ${h}" width="${w}" height="${h}" preserveAspectRatio="none"><polyline points="${pts}" fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+}
+function renderZoneBarChart(reps){
+  const zones = visibleZones();
+  const max=228;
+  const container = document.getElementById('zone-bar-chart');
+  container.innerHTML = zones.map(z=>{
+    const sub = reps.filter(r=>r.zone===z).length || MOCK.analytics.zones[z]?.reported || 50;
+    const fix = reps.filter(r=>r.zone===z&&r.status==='fixed').length || MOCK.analytics.zones[z]?.fixed || 30;
+    const subH = Math.max(8,Math.round((sub/max)*120));
+    const fixH = Math.max(4,Math.round((fix/max)*120));
+    return `<div class="bar-zone">
+      <div class="bar-val">${sub}</div>
+      <div class="bar-pair"><div class="bar-b" style="height:${subH}px;background:var(--navy);"></div><div class="bar-b" style="height:${fixH}px;background:var(--gold);"></div></div>
+      <div class="bar-lbl">${z.substring(0,6)}</div>
+    </div>`;
+  }).join('');
+}
+function renderDonut(reps){
+  const counts = {critical:0,high:0,medium:0,low:0};
+  reps.filter(r=>r.status!=='fixed').forEach(r=>counts[r.severity]=(counts[r.severity]||0)+1);
+  const total = Object.values(counts).reduce((a,b)=>a+b,0)||1;
+  const C = 2*Math.PI*44; // circumference
+  let offset = 0;
+  const segments=[{key:'critical',color:'#ef4444'},{key:'high',color:'#f97316'},{key:'medium',color:'#f59e0b'},{key:'low',color:'#22c55e'}];
+  segments.forEach(s=>{
+    const frac=counts[s.key]/total;
+    const dash=frac*C;
+    const el=document.getElementById('d-'+s.key);
+    if(el){ el.style.strokeDasharray=`${dash} ${C}`; el.style.strokeDashoffset=`${-offset}`; }
+    offset+=dash;
+  });
+  document.getElementById('d-center').textContent=total;
+  document.getElementById('donut-legend').innerHTML=segments.map(s=>`
+    <div class="dl-item"><div class="dl-dot" style="background:${s.color}"></div>${s.key.charAt(0).toUpperCase()+s.key.slice(1)}<span class="dl-val">${counts[s.key]}</span></div>`).join('');
+}
+function renderDashRecent(reps){
+  const recent = reps.slice(0,5);
+  document.getElementById('dash-recent-body').innerHTML = recent.map(r=>`
+    <tr>
+      <td><span style="font-family:monospace;font-size:11px;color:var(--muted)">${r.id}</span></td>
+      <td><div style="font-weight:600;font-size:12px">${r.location}</div><div style="font-size:11px;color:var(--light)">${r.area}</div></td>
+      <td style="font-size:12px">${r.ward}</td>
+      <td>${SEV_BADGE[r.severity]}</td>
+      <td>${STATUS_BADGE[r.status]}</td>
+      <td style="font-size:11px;color:var(--light)">${r.reported}</td>
+      <td><button class="btn btn-outline btn-xs" onclick="openDrawerById('${r.id}')">View</button></td>
+    </tr>`).join('');
+}
+
+// ── REPORTS ────────────────────────────────────────────────────
+let selectedRows = new Set();
+function renderReports(){
+  applyReportFilters();
+}
+function applyReportFilters(){
+  const q     = (document.getElementById('rep-search')?.value||'').toLowerCase();
+  const zone  = document.getElementById('f-zone')?.value||'';
+  const status= document.getElementById('f-status')?.value||'';
+  const sev   = document.getElementById('f-sev')?.value||'';
+  let data = visibleReports().filter(r=>{
+    if(zone   && r.zone!==zone)           return false;
+    if(status && r.status!==status)       return false;
+    if(sev    && r.severity!==sev)        return false;
+    if(q && !r.id.toLowerCase().includes(q) && !r.location.toLowerCase().includes(q) && !r.area.toLowerCase().includes(q)) return false;
+    return true;
+  });
+  // Sort
+  const col=APP.reports.sortCol; const dir=APP.reports.sortDir;
+  data.sort((a,b)=>{
+    if(col==='id') return dir*a.id.localeCompare(b.id);
+    if(col==='severity') return dir*(SEV_ORDER[a.severity]-SEV_ORDER[b.severity]);
+    if(col==='ts') return dir*(b.ts-a.ts);
+    return 0;
+  });
+  APP.reports.filtered=data; APP.reports.page=1;
+  document.getElementById('rep-count-badge').textContent=data.length+' total';
+  renderRepPage();
+}
+function filterReports(){ applyReportFilters(); }
+function sortReports(col){
+  if(APP.reports.sortCol===col) APP.reports.sortDir*=-1;
+  else { APP.reports.sortCol=col; APP.reports.sortDir=-1; }
+  ['id','severity','ts'].forEach(c=>{ const el=document.getElementById('th-'+c); if(el){ el.classList.remove('sort-asc','sort-desc'); } });
+  const th=document.getElementById('th-'+col);
+  if(th) th.classList.add(APP.reports.sortDir===1?'sort-asc':'sort-desc');
+  applyReportFilters();
+}
+function renderRepPage(){
+  const {filtered,page,perPage}=APP.reports;
+  const start=(page-1)*perPage; const end=start+perPage;
+  const rows=filtered.slice(start,end);
+  document.getElementById('rep-body').innerHTML=rows.map(r=>`
+    <tr class="${selectedRows.has(r.id)?'selected':''}">
+      <td><input type="checkbox" ${selectedRows.has(r.id)?'checked':''} onchange="toggleRow('${r.id}',this)"/></td>
+      <td><div class="photo-thumb sev-${r.severity}">📷</div></td>
+      <td><span style="font-family:monospace;font-size:11px;color:var(--muted)">${r.id}</span></td>
+      <td><div style="font-weight:600;font-size:12px">${r.location}</div><div style="font-size:11px;color:var(--light)">${r.area}</div></td>
+      <td><div style="font-size:12px">${r.ward}</div><div style="font-size:11px;color:var(--light)">${r.zone}</div></td>
+      <td>${SEV_BADGE[r.severity]}</td>
+      <td style="font-size:11px;color:var(--muted)">${r.roadType}</td>
+      <td>${STATUS_BADGE[r.status]}</td>
+      <td style="font-size:12px">${r.ae||'<span style="color:var(--light)">—</span>'}</td>
+      <td style="font-size:11px;color:var(--light)">${r.reported}</td>
+      <td><button class="btn btn-outline btn-xs" onclick="openDrawerById('${r.id}')">View</button></td>
+    </tr>`).join('');
+  renderPagination();
+}
+function renderPagination(){
+  const {filtered,page,perPage}=APP.reports;
+  const pages=Math.ceil(filtered.length/perPage)||1;
+  const start=(page-1)*perPage+1; const end=Math.min(page*perPage,filtered.length);
+  let html=`<span class="pg-info">Showing ${start}–${end} of ${filtered.length}</span>`;
+  if(page>1) html+=`<div class="pg-btn" onclick="repGo(${page-1})">‹</div>`;
+  for(let i=Math.max(1,page-2);i<=Math.min(pages,page+2);i++) html+=`<div class="pg-btn ${i===page?'active':''}" onclick="repGo(${i})">${i}</div>`;
+  if(page<pages) html+=`<div class="pg-btn" onclick="repGo(${page+1})">›</div>`;
+  document.getElementById('rep-pagination').innerHTML=html;
+}
+function repGo(p){ APP.reports.page=p; renderRepPage(); }
+function toggleRow(id,cb){ if(cb.checked) selectedRows.add(id); else selectedRows.delete(id); updateBulkBar(); renderRepPage(); }
+function toggleSelectAll(cb){ const rows=APP.reports.filtered.slice((APP.reports.page-1)*APP.reports.perPage,APP.reports.page*APP.reports.perPage); rows.forEach(r=>{ if(cb.checked) selectedRows.add(r.id); else selectedRows.delete(r.id); }); updateBulkBar(); renderRepPage(); }
+function updateBulkBar(){ const bb=document.getElementById('bulk-bar'); if(selectedRows.size>0){ bb.classList.add('visible'); document.getElementById('bulk-count').textContent=selectedRows.size+' selected'; } else bb.classList.remove('visible'); }
+function clearBulk(){ selectedRows.clear(); updateBulkBar(); renderRepPage(); }
+function bulkAssign(){ if(!canSee('circle_dee')){ alert('Permission denied.'); return; } showModal('confirm-modal',{title:'Assign AE',desc:`Assign ${selectedRows.size} selected report(s) to an AE?`,action:()=>{ clearBulk(); closeModal(); }}); }
+function bulkEscalate(){ if(!canSee('zone_ee')){ alert('Permission denied.'); return; } showModal('confirm-modal',{title:'Escalate Reports',desc:`Escalate ${selectedRows.size} report(s) to Zone EE?`,action:()=>{ clearBulk(); closeModal(); }}); }
+function exportCSV(){
+  const reps = APP.reports.filtered.length ? APP.reports.filtered : visibleReports();
+  const hdr=['ID','Location','Area','Ward','Zone','Severity','Status','Road Type','AE','Reported'];
+  const rows=reps.map(r=>[r.id,r.location,r.area,r.ward,r.zone,r.severity,r.status,r.roadType,r.ae||'',r.reported]);
+  const csv=[hdr,...rows].map(r=>r.map(v=>`"${v}"`).join(',')).join('\n');
+  const a=document.createElement('a'); a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv); a.download='mana-rasta-reports.csv'; a.click();
+}
+
+// ── DRAWER ─────────────────────────────────────────────────────
+function openDrawerById(id){
+  const r = MOCK.reports.find(r=>r.id===id); if(!r) return;
+  const sevColor = SEV_COLOR[r.severity];
+  document.getElementById('drawer-title').textContent = r.id;
+  document.getElementById('drawer-body').innerHTML=`
+    <div class="report-photo" style="border-left:6px solid ${sevColor}">${r.photo} <span style="font-size:14px;color:var(--muted);margin-left:8px">Photo placeholder</span></div>
+    <div class="drawer-section">
+      <div class="drawer-section-title">Report Details</div>
+      <div class="detail-grid">
+        <div class="detail-item"><div class="detail-label">Location</div><div class="detail-value">${r.location}, ${r.area}</div></div>
+        <div class="detail-item"><div class="detail-label">Ward / Zone</div><div class="detail-value">${r.ward} · ${r.zone}</div></div>
+        <div class="detail-item"><div class="detail-label">Severity</div><div class="detail-value">${SEV_BADGE[r.severity]}</div></div>
+        <div class="detail-item"><div class="detail-label">Status</div><div class="detail-value">${STATUS_BADGE[r.status]}</div></div>
+        <div class="detail-item"><div class="detail-label">Road Type</div><div class="detail-value">${r.roadType}</div></div>
+        <div class="detail-item"><div class="detail-label">Assigned AE</div><div class="detail-value">${r.ae||'—'}</div></div>
+        <div class="detail-item"><div class="detail-label">Reported</div><div class="detail-value">${r.reported}</div></div>
+        <div class="detail-item"><div class="detail-label">SLA</div><div class="detail-value">${{critical:'24 hours',high:'48 hours',medium:'96 hours',low:'7 days'}[r.severity]}</div></div>
+      </div>
+    </div>
+    <div class="drawer-section">
+      <div class="drawer-section-title">Activity Timeline</div>
+      <div class="timeline-event"><div><div class="tl-dot" style="background:var(--green)"></div></div><div><div class="tl-label">Report submitted by citizen</div><div class="tl-time">${r.reported}</div></div></div>
+      ${r.ae?`<div class="timeline-event"><div><div class="tl-dot" style="background:var(--gold)"></div></div><div><div class="tl-label">Assigned to ${r.ae}</div><div class="tl-time">Shortly after</div></div></div>`:''}
+      ${r.status==='in_repair'?`<div class="timeline-event"><div><div class="tl-dot" style="background:var(--blue)"></div></div><div><div class="tl-label">Repair work started</div><div class="tl-time">In progress</div></div></div>`:''}
+      ${r.status==='fixed'?`<div class="timeline-event"><div><div class="tl-dot" style="background:var(--green)"></div></div><div><div class="tl-label">Repair completed — confirmed fixed</div><div class="tl-time">Resolved</div></div></div>`:''}
+      ${r.status==='sla_breach'?`<div class="timeline-event"><div><div class="tl-dot" style="background:var(--red)"></div></div><div><div class="tl-label">SLA deadline exceeded</div><div class="tl-time" style="color:var(--red)">OVERDUE</div></div></div>`:''}
+    </div>
+    <div class="drawer-section">
+      <div class="drawer-section-title">Officer Notes</div>
+      <textarea class="notes-area" placeholder="Add notes…">No notes yet.</textarea>
+    </div>`;
+  document.getElementById('drawer-footer').innerHTML=`
+    <button class="btn btn-outline" onclick="closeDrawer()">Close</button>
+    ${canSee('circle_dee')?`<button class="btn btn-primary" style="margin-left:auto">Save Notes</button>`:''}
+    ${canSee('zone_ee')&&r.status==='sla_breach'?`<button class="btn btn-red btn-sm" onclick="showModal('escalate-modal')">Escalate to EE</button>`:''}`;
+  document.getElementById('drawer-overlay').classList.add('open');
+  document.getElementById('drawer').classList.add('open');
+}
+function closeDrawer(){ document.getElementById('drawer-overlay').classList.remove('open'); document.getElementById('drawer').classList.remove('open'); }
+
+// ── MODALS ─────────────────────────────────────────────────────
+function showModal(type, opts={}){
+  const box = document.getElementById('modal-content');
+  let html='';
+  if(type==='confirm-modal'){ html=`<div class="modal-title">${opts.title||'Confirm'}</div><div class="modal-desc">${opts.desc||'Are you sure?'}</div><div class="modal-footer"><button class="btn btn-outline" onclick="closeModal()">Cancel</button><button class="btn btn-primary" onclick="(${opts.action||closeModal})()">Confirm</button></div>`; }
+  else if(type==='forgot-modal'){ html=`<div class="modal-title">Forgot Password</div><div class="modal-desc">Enter your GHMC email address and we'll send a reset link.</div><div class="form-group"><label class="form-label">Email</label><input class="form-input" type="email" placeholder="you@ghmc.gov.in"/></div><div class="modal-footer"><button class="btn btn-outline" onclick="closeModal()">Cancel</button><button class="btn btn-primary">Send Reset Link</button></div>`; }
+  else if(type==='profile-modal'){ const u=APP.user; html=`<div class="modal-title">My Profile</div><div class="detail-grid" style="margin-bottom:16px"><div class="detail-item"><div class="detail-label">Name</div><div class="detail-value">${u.name}</div></div><div class="detail-item"><div class="detail-label">Role</div><div class="detail-value">${ROLE_LABELS[u.role]}</div></div><div class="detail-item"><div class="detail-label">Email</div><div class="detail-value">${u.email}</div></div><div class="detail-item"><div class="detail-label">Scope</div><div class="detail-value">${u.zone||'All Zones'}</div></div></div><div class="modal-footer"><button class="btn btn-outline" onclick="closeModal()">Close</button></div>`; }
+  else if(type==='suspend-modal'){ html=`<div class="modal-title">Suspend User</div><div class="modal-desc">Suspend <strong>${opts.user}</strong> from submitting reports? Specify duration:</div><div class="form-group"><label class="form-label">Duration</label><select class="form-select"><option>7 days</option><option>30 days</option><option>90 days</option><option>Permanent</option></select></div><div class="modal-footer"><button class="btn btn-outline" onclick="closeModal()">Cancel</button><button class="btn btn-red" onclick="closeModal();alert('User suspended.')">Suspend</button></div>`; }
+  else if(type==='reject-modal'){ html=`<div class="modal-title">Reject Report</div><div class="modal-desc">Reject report <strong>${opts.reportId}</strong> as fraudulent? This cannot be undone.</div><div class="modal-footer"><button class="btn btn-outline" onclick="closeModal()">Cancel</button><button class="btn btn-red" onclick="closeModal();alert('Report rejected.')">Reject Report</button></div>`; }
+  else if(type==='review-modal'){ html=`<div class="modal-title">User Submission History — ${opts.userId}</div><div style="margin-bottom:14px"><span class="badge b-red">Risk Score: ${opts.score}</span> &nbsp; <span class="badge b-gray">${opts.reports} reports total</span></div><div class="table-wrap"><table><thead><tr><th class="no-sort">Report ID</th><th class="no-sort">Location</th><th class="no-sort">Status</th><th class="no-sort">Flagged</th></tr></thead><tbody>${MOCK.reports.slice(0,4).map(r=>`<tr><td style="font-family:monospace;font-size:11px">${r.id}</td><td>${r.location}</td><td>${STATUS_BADGE[r.status]}</td><td>${Math.random()>.5?'✅ Clean':'🚨 Flagged'}</td></tr>`).join('')}</tbody></table></div><div class="modal-footer"><button class="btn btn-outline" onclick="closeModal()">Close</button><button class="btn btn-red" onclick="closeModal();showModal('suspend-modal',{user:opts.userId})">Suspend User</button></div>`; }
+  else if(type==='officer-edit-modal'){ const o=opts.officer; html=`<div class="modal-title">Edit Officer — ${o.name}</div><div class="form-group"><label class="form-label">Name</label><input class="form-input" value="${o.name}"/></div><div class="form-group"><label class="form-label">Phone</label><input class="form-input" value="${o.phone}"/></div><div class="form-group"><label class="form-label">Email</label><input class="form-input" value="${o.email}"/></div><div class="form-group"><label class="form-label">Wards</label><input class="form-input" value="${o.wards}"/></div><div class="modal-footer"><button class="btn btn-outline" onclick="closeModal()">Cancel</button><button class="btn btn-primary" onclick="closeModal();alert('Saved.')">Save Changes</button></div>`; }
+  else if(type==='add-user-modal'){ html=`<div class="modal-title">Add Officer / Admin User</div><div class="form-group"><label class="form-label">Full Name</label><input class="form-input" placeholder="e.g. Arjun Prasad"/></div><div class="form-group"><label class="form-label">Email</label><input class="form-input" type="email" placeholder="name@ghmc.gov.in"/></div><div class="form-group"><label class="form-label">Role</label><select class="form-select"><option value="ward_ae">Ward AE</option><option value="circle_dee">Circle DEE</option><option value="zone_ee">Zone EE</option><option value="commissioner">Commissioner</option><option value="sysadmin">System Admin</option></select></div><div class="form-group"><label class="form-label">Zone</label><select class="form-select"><option>Kukatpally</option><option>Khairatabad</option><option>Charminar</option><option>LB Nagar</option><option>Serilingampally</option><option>Secunderabad</option></select></div><div class="modal-footer"><button class="btn btn-outline" onclick="closeModal()">Cancel</button><button class="btn btn-primary" onclick="closeModal();alert('Officer added.')">Add Officer</button></div>`; }
+  else if(type==='escalate-modal'){ html=`<div class="modal-title">Escalate Report</div><div class="modal-desc">Escalate this SLA breach to the Zone EE? An alert will be sent via the GHMC IGS chain.</div><div class="modal-footer"><button class="btn btn-outline" onclick="closeModal()">Cancel</button><button class="btn btn-red" onclick="closeModal();alert('Escalated to Zone EE.')">Escalate →</button></div>`; }
+  else if(type==='lb-profile-modal'){
+    const u=opts.user;
+    html=`<div class="modal-title">${u.name}</div><div style="margin-bottom:14px;display:flex;gap:8px">${u.badge?`<span style="font-size:20px">${u.badge}</span>`:''}<span class="badge b-navy">${u.pts.toLocaleString()} pts</span><span class="badge b-gray">${u.reports} reports</span></div>
+    <div class="detail-grid" style="margin-bottom:14px">
+      <div class="detail-item"><div class="detail-label">Reports</div><div class="detail-value">${u.reports}</div></div>
+      <div class="detail-item"><div class="detail-label">Points</div><div class="detail-value">${u.pts.toLocaleString()}</div></div>
+      <div class="detail-item"><div class="detail-label">Fixed</div><div class="detail-value">${Math.floor(u.reports*.65)}</div></div>
+      <div class="detail-item"><div class="detail-label">Streak</div><div class="detail-value">7 days 🔥</div></div>
+    </div>
+    <div class="drawer-section-title" style="margin-bottom:8px">Recent Submissions</div>
+    <div class="table-wrap"><table><thead><tr><th class="no-sort">ID</th><th class="no-sort">Location</th><th class="no-sort">Status</th></tr></thead><tbody>${MOCK.reports.slice(0,3).map(r=>`<tr><td style="font-family:monospace;font-size:11px">${r.id}</td><td>${r.location}</td><td>${STATUS_BADGE[r.status]}</td></tr>`).join('')}</tbody></table></div>
+    <div class="modal-footer"><button class="btn btn-outline" onclick="closeModal()">Close</button></div>`;
+  }
+  box.innerHTML=html;
+  document.getElementById('modal-overlay').classList.add('open');
+}
+function closeModal(){ document.getElementById('modal-overlay').classList.remove('open'); }
+
+// ── MAP ────────────────────────────────────────────────────────
+const PIN_POSITIONS = [
+  {id:'MR-2025-A9F3',top:'38%',left:'26%'},{id:'MR-2025-B2K1',top:'24%',left:'58%'},
+  {id:'MR-2025-C4L8',top:'32%',left:'48%'},{id:'MR-2025-D7M2',top:'60%',left:'32%'},
+  {id:'MR-2025-E1N5',top:'55%',left:'62%'},{id:'MR-2025-F3P9',top:'42%',left:'72%'},
+  {id:'MR-2025-G9Q3',top:'68%',left:'45%'},{id:'MR-2025-H2R7',top:'20%',left:'38%'},
+  {id:'MR-2025-I5S1',top:'48%',left:'18%'},{id:'MR-2025-J7T4',top:'30%',left:'34%'},
+];
+function renderMap(){
+  const zoneF  = document.getElementById('map-f-zone')?.value||'';
+  const sevF   = document.getElementById('map-f-sev')?.value||'';
+  const statF  = document.getElementById('map-f-status')?.value||'';
+  let reps = visibleReports().filter(r=>{
+    if(zoneF && r.zone!==zoneF) return false;
+    if(sevF  && r.severity!==sevF) return false;
+    if(statF && r.status!==statF) return false;
+    return true;
+  });
+  document.getElementById('ms-open').textContent  = reps.filter(r=>r.status!=='fixed').length;
+  document.getElementById('ms-crit').textContent  = reps.filter(r=>r.severity==='critical').length;
+  document.getElementById('ms-fixed').textContent = reps.filter(r=>r.status==='fixed').length;
+  const container = document.getElementById('map-pins');
+  container.innerHTML = PIN_POSITIONS.map(pos=>{
+    const r = reps.find(x=>x.id===pos.id); if(!r) return '';
+    const c = SEV_COLOR[r.severity];
+    return `<div class="map-pin" style="top:${pos.top};left:${pos.left}" onclick="showMapPopup('${r.id}',event)">
+      <div class="map-pin-dot" style="background:${c}">${r.severity[0].toUpperCase()}</div>
+      <div class="map-pin-tail" style="background:${c}"></div>
+    </div>`;
+  }).join('');
+}
+function showMapPopup(id, e){
+  e.stopPropagation();
+  const r=MOCK.reports.find(x=>x.id===id); if(!r) return;
+  const popup=document.getElementById('map-popup');
+  const pin=e.currentTarget;
+  const mapRect=document.getElementById('map-wrap').getBoundingClientRect();
+  const pinRect=pin.getBoundingClientRect();
+  const top=pinRect.top-mapRect.top+pinRect.height+6;
+  const left=Math.min(pinRect.left-mapRect.left, mapRect.width-220);
+  popup.style.top=top+'px'; popup.style.left=left+'px';
+  document.getElementById('pp-id').textContent=r.id;
+  document.getElementById('pp-loc').textContent=r.location;
+  document.getElementById('pp-sev').innerHTML=SEV_BADGE[r.severity];
+  document.getElementById('pp-status').innerHTML=STATUS_BADGE[r.status];
+  document.getElementById('pp-ae').textContent=r.ae||'—';
+  popup.classList.add('open');
+}
+document.addEventListener('click',e=>{ if(!e.target.closest('.map-pin')&&!e.target.closest('.map-popup')) document.getElementById('map-popup')?.classList.remove('open'); });
+function toggleWards(){
+  APP.map.wardsVisible=!APP.map.wardsVisible;
+  document.querySelectorAll('.map-ward').forEach(w=>w.classList.toggle('visible',APP.map.wardsVisible));
+}
+function mapSearch(q){
+  q=q.toLowerCase();
+  document.querySelectorAll('.map-ward').forEach(w=>{ const lbl=w.querySelector('.map-ward-label').textContent.toLowerCase(); w.style.outline=lbl.includes(q)&&q?'2px solid var(--gold)':''; });
+}
+let mapScale=1;
+function mapZoom(dir){
+  mapScale=Math.max(.6,Math.min(1.8,mapScale+(dir*.15)));
+  const inner=document.getElementById('map-wrap').querySelector('.map-bg');
+  const pins=document.getElementById('map-pins');
+  document.getElementById('map-wrap').style.transform=`scale(${mapScale})`;
+  document.getElementById('map-wrap').style.transformOrigin='center center';
+}
+function toggleHeatmap(){
+  APP.map.heatmapVisible=!APP.map.heatmapVisible;
+  const canvas=document.getElementById('map-heatmap');
+  if(APP.map.heatmapVisible){
+    canvas.classList.add('visible');
+    drawHeatmapCanvas(canvas);
+    document.getElementById('map-pins').style.opacity='.3';
+  } else {
+    canvas.classList.remove('visible');
+    document.getElementById('map-pins').style.opacity='1';
+  }
+}
+function drawHeatmapCanvas(canvas){
+  const w=canvas.offsetWidth, h=canvas.offsetHeight;
+  canvas.width=w; canvas.height=h;
+  const ctx=canvas.getContext('2d');
+  const pts=PIN_POSITIONS.map(p=>({ x:parseFloat(p.left)/100*w, y:parseFloat(p.top)/100*h, r:60+Math.random()*40 }));
+  pts.forEach(p=>{
+    const g=ctx.createRadialGradient(p.x,p.y,0,p.x,p.y,p.r);
+    g.addColorStop(0,'rgba(239,68,68,.55)');
+    g.addColorStop(.5,'rgba(249,115,22,.3)');
+    g.addColorStop(1,'rgba(245,166,35,0)');
+    ctx.fillStyle=g; ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,Math.PI*2); ctx.fill();
+  });
+}
+
+// ── OFFICERS ──────────────────────────────────────────────────
+function renderOfficers(){
+  const zones = visibleZones();
+  const tabs = document.getElementById('off-zone-tabs');
+  tabs.innerHTML = (zones.length>1?[{label:'All',value:'all'}]:[]).concat(zones.map(z=>({label:z,value:z}))).map(z=>`<div class="zone-tab ${APP.officers.zone===z.value?'active':''}" onclick="setOfficerZone('${z.value}',this)">${z.label}</div>`).join('');
+  renderOfficerList();
+}
+function setOfficerZone(zone,el){ APP.officers.zone=zone; document.querySelectorAll('.zone-tab').forEach(t=>t.classList.remove('active')); el.classList.add('active'); renderOfficerList(); }
+function filterOfficers(q){ APP.officers.query=q; renderOfficerList(); }
+function renderOfficerList(){
+  let offs = visibleOfficers();
+  if(APP.officers.zone && APP.officers.zone!=='all') offs=offs.filter(o=>o.zone===APP.officers.zone);
+  if(APP.officers.query) offs=offs.filter(o=>o.name.toLowerCase().includes(APP.officers.query.toLowerCase())||o.wards.toLowerCase().includes(APP.officers.query.toLowerCase()));
+  const list=document.getElementById('officers-list');
+  if(!offs.length){ list.innerHTML='<div style="text-align:center;padding:32px;color:var(--light)">No officers found.</div>'; return; }
+  list.innerHTML=`<div style="display:flex;flex-direction:column;gap:8px">`+offs.map(o=>{
+    const perf=o.ontime>=90?`<span class="off-perf" style="background:#dcfce7;color:#16a34a">✅ ${o.ontime}% on-time</span>`:o.ontime>=80?`<span class="off-perf" style="background:#fef3c7;color:#b45309">⚠️ ${o.ontime}% on-time</span>`:`<span class="off-perf" style="background:#fee2e2;color:#dc2626">⚠️ ${o.ontime}% on-time</span>`;
+    return `<div class="officer-card">
+      <div class="off-avatar">${o.initials}</div>
+      <div style="flex:1">
+        <div class="off-name">${o.name}</div>
+        <div class="off-role">${o.role} · ${o.wards}</div>
+        <div class="off-contact">📞 ${o.phone} · ✉️ ${o.email}</div>
+      </div>
+      <div class="off-stats">
+        ${o.role!=='DEE'?`<div class="off-stat"><div class="off-stat-val" style="color:var(--green)">${o.fixed}</div><div class="off-stat-lbl">Fixed</div></div><div class="off-stat"><div class="off-stat-val" style="color:var(--orange)">${o.active}</div><div class="off-stat-lbl">Active</div></div>`:''}
+        ${perf}
+      </div>
+      <div class="off-actions">
+        <button class="btn btn-outline btn-xs">📞 Msg</button>
+        ${canSee('zone_ee')?`<button class="btn btn-outline btn-xs" onclick="showModal('officer-edit-modal',{officer:MOCK.officers.find(x=>x.email==='${o.email}')})">✏️</button>`:''}
+      </div>
+    </div>`;
+  }).join('')+'</div>';
+}
+
+// ── SLA ────────────────────────────────────────────────────────
+function renderSLA(){
+  const reps=visibleReports();
+  const counts={critical:reps.filter(r=>r.severity==='critical').length||109,high:reps.filter(r=>r.severity==='high').length||157,medium:reps.filter(r=>r.severity==='medium').length||123,low:reps.filter(r=>r.severity==='low').length||48};
+  const breaches={critical:3,high:0,medium:0,low:0};
+  const cards=[
+    {label:'Critical (24h SLA)',key:'critical',color:'#ef4444'},
+    {label:'High (48h SLA)',key:'high',color:'#f97316'},
+    {label:'Medium (96h SLA)',key:'medium',color:'#f59e0b'},
+    {label:'Low (7d SLA)',key:'low',color:'#22c55e'},
+  ];
+  document.getElementById('sla-cards').innerHTML=cards.map(c=>{
+    const total=counts[c.key]; const breach=breaches[c.key]; const pct=total>0?Math.round(((total-breach)/total)*100):100;
+    return `<div class="sla-card" style="border-left-color:${c.color}"><div class="sla-lbl">${c.label}</div><div class="sla-val" style="color:${c.color}">${total}</div><div class="sla-lbl">${breach} breached · ${total-breach} on track</div><div class="progress-bar"><div class="progress-fill" style="width:${pct}%;background:${c.color}"></div></div></div>`;
+  }).join('');
+  const breachedReps=visibleReports().filter(r=>r.status==='sla_breach');
+  const slaDetails=[{id:'MR-2025-D7M2',loc:'Secunderabad Main Rd, Ward 22',sev:'critical',ae:'AE Venkat R.',when:'2 days ago',deadline:'Apr 13, 09:00',overdue:'+26 hrs'},{id:'MR-2025-G9Q3',loc:'Dilsukhnagar Rd, Ward 38',sev:'critical',ae:'AE Farhan A.',when:'3 days ago',deadline:'Apr 12, 14:00',overdue:'+44 hrs'},{id:'MR-2025-H2R7',loc:'Himayatnagar Ring Rd',sev:'critical',ae:'AE Priya S.',when:'4 days ago',deadline:'Apr 11, 11:30',overdue:'+60 hrs'}];
+  document.getElementById('sla-breach-body').innerHTML=slaDetails.map(s=>`
+    <tr>
+      <td><span style="font-family:monospace;font-size:11px">${s.id}</span></td>
+      <td>${s.loc}</td>
+      <td>${SEV_BADGE[s.sev]}</td>
+      <td>${s.ae}</td>
+      <td style="font-size:11px;color:var(--light)">${s.when}</td>
+      <td style="font-size:11px">${s.deadline}</td>
+      <td><span style="color:var(--red);font-weight:700">${s.overdue}</span></td>
+      <td><button class="btn btn-red btn-xs" onclick="showModal('escalate-modal')">Escalate →</button></td>
+    </tr>`).join('');
+}
+
+// ── FRAUD ─────────────────────────────────────────────────────
+function fraudTab(tab, el){ document.querySelectorAll('.fraud-tab').forEach(t=>t.classList.remove('active')); el.classList.add('active'); document.getElementById('fraud-active-panel').style.display=tab==='active'?'block':'none'; document.getElementById('fraud-history-panel').style.display=tab==='history'?'block':'none'; document.getElementById('fraud-rules-panel').style.display=tab==='rules'?'block':'none'; }
+function renderFraud(){
+  document.getElementById('fraud-active-count').textContent=MOCK.fraudAlerts.filter(a=>a.status==='active').length+' Active';
+  document.getElementById('fraud-alerts-list').innerHTML=`<div style="display:flex;flex-direction:column;gap:10px;margin-bottom:16px">`+MOCK.fraudAlerts.map(a=>`
+    <div class="fraud-alert ${a.type}">
+      <div class="fa-icon">${a.icon}</div>
+      <div style="flex:1">
+        <div class="fa-title">${a.title}</div>
+        <div class="fa-desc">${a.desc}</div>
+        <div class="fa-time">${a.time}</div>
+        <div style="display:flex;gap:8px;margin-top:10px">
+          <button class="btn btn-red btn-xs" onclick="showModal('suspend-modal',{user:'${a.user}'})">Suspend User</button>
+          <button class="btn btn-xs btn-outline" onclick="showModal('reject-modal',{reportId:'${a.id}'})">Reject Report</button>
+          <button class="btn btn-xs btn-outline" onclick="showModal('review-modal',{userId:'${a.userId}',score:${a.riskScore},reports:${a.reports}})">Review History</button>
+        </div>
+      </div>
+    </div>`).join('')+'</div>';
+  document.getElementById('fraud-risk-body').innerHTML=[
+    {user:'+91 98765 43210',id:'U-4421',reports:34,flags:'7 duplicates',score:87,last:'2h ago'},
+    {user:'+91 87654 32109',id:'U-3318',reports:12,flags:'2 outside GHMC',score:54,last:'Yesterday'},
+    {user:'+91 76543 21098',id:'U-2207',reports:8,flags:'1 after hours',score:22,last:'3d ago'},
+  ].map(u=>`<tr>
+    <td>${u.user}</td><td>${u.reports}</td><td>${u.flags}</td>
+    <td><span class="badge ${u.score>=70?'b-red':u.score>=40?'b-amber':'b-green'}">${u.score>=70?'HIGH':u.score>=40?'MEDIUM':'LOW'} — ${u.score}</span></td>
+    <td style="font-size:11px;color:var(--light)">${u.last}</td>
+    <td><button class="btn btn-outline btn-xs" onclick="showModal('review-modal',{userId:'${u.id}',score:${u.score},reports:${u.reports}})">Review</button></td>
+  </tr>`).join('');
+  document.getElementById('fraud-history-body').innerHTML=MOCK.fraudHistory.map(h=>`<tr><td style="font-family:monospace;font-size:11px">${h.id}</td><td>${h.title}</td><td style="font-size:12px;color:var(--green)">${h.resolution}</td><td style="font-size:11px;color:var(--light)">${h.date}</td><td><span class="badge b-gray">${h.riskScore}</span></td></tr>`).join('');
+  document.getElementById('fraud-rules-list').innerHTML=MOCK.fraudRules.map(r=>`
+    <div class="rules-item">
+      <div class="rule-label">${r.label}</div>
+      <div style="display:flex;align-items:center;gap:8px">
+        ${r.value!=='Auto'?`<input type="number" value="${r.value}" style="width:64px;text-align:center;border:1px solid #e5e7eb;border-radius:7px;padding:4px 8px;font-size:13px;font-weight:700" oninput="this.nextSibling.textContent=' '+this.value+' ${r.unit}'">`:''}
+        <span class="rule-val">${r.value==='Auto'?'Auto-enabled':r.value+' '+r.unit}</span>
+      </div>
+    </div>`).join('');
+}
+
+// ── ANALYTICS ────────────────────────────────────────────────
+const ANA_MONTHS = ['May 2025','Jun 2025','Jul 2025','Aug 2025','Sep 2025','Oct 2025','Nov 2025','Dec 2025','Jan 2026','Feb 2026','Mar 2026','Apr 2026'];
+function anaMonth(dir){ APP.ana.monthIdx=Math.max(0,Math.min(ANA_MONTHS.length-1,APP.ana.monthIdx+dir)); document.getElementById('ana-month-label').textContent=ANA_MONTHS[APP.ana.monthIdx]; }
+function renderAnalytics(){
+  document.getElementById('ana-month-label').textContent=ANA_MONTHS[APP.ana.monthIdx];
+  renderAnaStats();
+  renderTrendLine();
+  renderZoneCompare();
+  renderPeakHeatmap();
+  renderDOWChart();
+}
+function renderAnaStats(){
+  const cards=[
+    {label:'Avg Fix Time',value:'38h',delta:'↓ 6h vs last month',cls:'delta-up',icon:'⏱️'},
+    {label:'Resolution Rate',value:'66%',delta:'↑ 4% vs last month',cls:'delta-up',icon:'✅',vc:'#058541'},
+    {label:'Citizen Engagement',value:'3.4K',delta:'↑ 341 new users',cls:'delta-up',icon:'👥',vc:'#F5A623'},
+    {label:'Repeat Pothole %',value:'18%',delta:'↓ 3% vs last month',cls:'delta-up',icon:'🔁'},
+  ];
+  document.getElementById('ana-stats').innerHTML=cards.map(c=>`<div class="stat-card"><div class="stat-label">${c.label} <span style="float:right;font-size:18px">${c.icon}</span></div><div class="stat-value" style="color:${c.vc||'var(--text)'}">${c.value}</div><div class="stat-delta ${c.cls}">${c.delta}</div></div>`).join('');
+}
+function renderTrendLine(){
+  const svg=document.getElementById('trend-svg'); if(!svg) return;
+  const w=svg.clientWidth||460, h=140;
+  const rep=MOCK.analytics.reported, fix=MOCK.analytics.fixed, months=MOCK.analytics.months;
+  const max=Math.max(...rep), min=0;
+  const px=(i)=>Math.round((i/(months.length-1))*w);
+  const py=(v)=>Math.round(h-((v-min)/(max-min||1))*(h-20));
+  const repPts=rep.map((v,i)=>`${px(i)},${py(v)}`).join(' ');
+  const fixPts=fix.map((v,i)=>`${px(i)},${py(v)}`).join(' ');
+  svg.innerHTML=`
+    <polyline points="${repPts}" fill="none" stroke="var(--navy)" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+    <polyline points="${fixPts}" fill="none" stroke="var(--green)" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+    ${rep.map((v,i)=>`<circle cx="${px(i)}" cy="${py(v)}" r="3.5" fill="var(--navy)"/>`).join('')}
+    ${fix.map((v,i)=>`<circle cx="${px(i)}" cy="${py(v)}" r="3.5" fill="var(--green)"/>`).join('')}
+    ${months.map((m,i)=>`<text x="${px(i)}" y="${h+14}" text-anchor="middle" font-size="9" fill="#9ca3af">${m}</text>`).join('')}`;
+}
+function renderZoneCompare(){
+  const zones=Object.keys(MOCK.analytics.zones); const zData=MOCK.analytics.zones;
+  const maxV=Math.max(...zones.map(z=>zData[z].reported));
+  document.getElementById('zone-compare-chart').innerHTML=zones.map(z=>{
+    const d=zData[z];
+    const rH=Math.max(4,Math.round((d.reported/maxV)*130));
+    const fH=Math.max(2,Math.round((d.fixed/maxV)*130));
+    const bH=Math.max(2,Math.round((d.breach/maxV)*130));
+    return `<div class="bar-zone">
+      <div class="bar-val" style="font-size:9px">${d.reported}</div>
+      <div class="bar-pair" style="gap:2px">
+        <div class="bar-b" style="height:${rH}px;background:var(--navy)"></div>
+        <div class="bar-b" style="height:${fH}px;background:var(--green)"></div>
+        <div class="bar-b" style="height:${bH}px;background:var(--red)"></div>
+      </div>
+      <div class="bar-lbl">${z.substring(0,5)}</div>
+    </div>`;
+  }).join('');
+}
+function renderPeakHeatmap(){
+  const d=MOCK.analytics; const hm=d.heatmap;
+  const cellW=24; const hours=Array.from({length:24},(_,i)=>i+'h');
+  let html=`<div style="display:flex;gap:2px;margin-bottom:4px;padding-left:30px">${d.dayLabels.map(l=>`<div style="width:${cellW}px;font-size:9px;color:var(--light);text-align:center">${l}</div>`).join('')}</div>`;
+  html+=`<div>`;
+  for(let h=0;h<24;h++){
+    html+=`<div style="display:flex;gap:2px;align-items:center;margin-bottom:2px">`;
+    html+=`<div style="width:28px;font-size:9px;color:var(--light);text-align:right;padding-right:4px">${h}:00</div>`;
+    for(let dv=0;dv<7;dv++){
+      const v=hm[h][dv]; const alpha=v/100;
+      const r=Math.round(0+(239-0)*alpha); const g=Math.round(43+(68-43)*alpha); const b=Math.round(92+(68-92)*alpha);
+      html+=`<div style="width:${cellW}px;height:14px;border-radius:2px;background:rgba(${r},${g},${b},${Math.max(.08,alpha)})" title="${h}:00 ${d.dayLabels[dv]}: ${v}%"></div>`;
+    }
+    html+=`</div>`;
+  }
+  html+=`</div>`;
+  document.getElementById('heatmap-container').innerHTML=html;
+}
+function renderDOWChart(){
+  const days=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  const vals=[148,174,186,159,204,112,77];
+  const max=Math.max(...vals);
+  const html=`<div style="display:flex;align-items:flex-end;gap:10px;height:80px;padding-top:8px">`+
+    days.map((d,i)=>`<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px">
+      <div style="font-size:10px;color:var(--muted);font-weight:700">${vals[i]}</div>
+      <div style="width:100%;background:${i===4?'var(--gold)':'var(--navy)'};border-radius:4px 4px 0 0;height:${Math.round((vals[i]/max)*60)}px"></div>
+      <div style="font-size:10px;color:var(--light)">${d}</div>
+    </div>`).join('')+'</div>';
+  document.getElementById('dow-chart').innerHTML=html;
+}
+
+// ── LEADERBOARD ──────────────────────────────────────────────
+function setLbFilter(type,val,el){ APP.lb[type]=val; document.querySelectorAll(`#lb-${type} .period-tab`).forEach(t=>t.classList.remove('active')); el.classList.add('active'); renderLeaderboard(); }
+function renderLeaderboard(){
+  const {period,scope}=APP.lb;
+  const data=MOCK.leaderboard[scope]?.[period]||[];
+  const cityData=MOCK.leaderboard.city?.alltime||[];
+  const scopeLabel={ward:'Ward 14',zone:'Kukatpally Zone',city:'Hyderabad City'}[scope];
+  document.getElementById('lb-left-title').textContent=`${scopeLabel} — ${period==='weekly'?'This Week':period==='monthly'?'This Month':'All Time'}`;
+  document.getElementById('lb-left').innerHTML=lbTable(data);
+  document.getElementById('lb-right').innerHTML=lbTable(cityData,'city');
+}
+function lbTable(rows, hint){
+  if(!rows.length) return '<div style="padding:20px;text-align:center;color:var(--light)">No data</div>';
+  return rows.map(r=>`
+    <div class="lb-row ${r.you?'you':''}">
+      <div class="lb-rank">${r.rank<=3?['🥇','🥈','🥉'][r.rank-1]:'#'+r.rank}</div>
+      <div class="lb-name">${r.name}${r.you?' <span style="font-size:10px;color:var(--gold)">(you)</span>':''}</div>
+      ${r.badge?`<span class="lb-badge">${r.badge}</span>`:''}
+      <div class="lb-pts">${r.pts.toLocaleString()} pts</div>
+      <div class="lb-reports">${r.reports} reports</div>
+      <button class="btn btn-xs btn-outline" onclick="showModal('lb-profile-modal',{user:${JSON.stringify(r).replace(/"/g,"'")}})">View</button>
+    </div>`).join('');
+}
+
+// ── ADMIN ─────────────────────────────────────────────────────
+function renderAdmin(){
+  APP.admin.users=[...MOCK.users]; APP.admin.filtered=[...MOCK.users];
+  renderAdminTable();
+}
+function filterAdminUsers(q){ APP.admin.filtered=MOCK.users.filter(u=>u.name.toLowerCase().includes(q.toLowerCase())||u.email.toLowerCase().includes(q.toLowerCase())); renderAdminTable(); }
+function filterAdminRole(r){ APP.admin.filtered=r?MOCK.users.filter(u=>u.role===r):[...MOCK.users]; renderAdminTable(); }
+function renderAdminTable(){
+  document.getElementById('admin-users-body').innerHTML=APP.admin.filtered.map(u=>`
+    <tr>
+      <td><div style="font-weight:600">${u.name}</div></td>
+      <td style="font-size:12px;color:var(--muted)">${u.email}</td>
+      <td><span class="role-badge role-${u.role}">${ROLE_LABELS[u.role]}</span></td>
+      <td style="font-size:12px">${u.zone||'All Zones'}${u.ward?(' · '+u.ward):''}</td>
+      <td><div style="display:flex;gap:6px">
+        <select class="form-select" style="padding:4px 8px;font-size:12px;width:auto" onchange="reassignRole(${u.id},this.value)" ${u.role==='sysadmin'?'disabled':''}>
+          ${['ward_ae','circle_dee','zone_ee','commissioner','sysadmin'].map(r=>`<option value="${r}" ${r===u.role?'selected':''}>${ROLE_LABELS[r]}</option>`).join('')}
+        </select>
+        <button class="btn btn-red btn-xs" ${u.role==='sysadmin'?'disabled':''} onclick="alert('User deactivated.')">Remove</button>
+      </div></td>
+    </tr>`).join('');
+}
+function reassignRole(id,role){ const u=MOCK.users.find(x=>x.id===id); if(u){ u.role=role; renderAdmin(); buildSidebar(); alert(`Role updated to ${ROLE_LABELS[role]}.`); } }
+
+// ── INIT ─────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', ()=>{
+  setupSearch();
+  tryAutoLogin();
+  // Enter key on login
+  document.getElementById('login-pass').addEventListener('keydown',e=>{ if(e.key==='Enter') doLogin(); });
+});
+
+</script>
+</body>
+</html>

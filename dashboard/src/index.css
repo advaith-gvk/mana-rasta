@@ -1,0 +1,17 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Override leaflet z-index to not break modals */
+.leaflet-pane { z-index: 1 !important; }
+.leaflet-top, .leaflet-bottom { z-index: 2 !important; }
+
+/* Smooth scrollbar */
+* { scrollbar-width: thin; scrollbar-color: #e5e7eb transparent; }
+*::-webkit-scrollbar { width: 5px; height: 5px; }
+*::-webkit-scrollbar-thumb { background: #e5e7eb; border-radius: 9999px; }
+
+@media (prefers-color-scheme: dark) {
+  * { scrollbar-color: #374151 transparent; }
+  *::-webkit-scrollbar-thumb { background: #374151; }
+}

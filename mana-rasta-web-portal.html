@@ -1,0 +1,728 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mana Rasta — GHMC Admin Portal</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:#F5F6FA;color:#111827;display:flex;min-height:100vh;}
+
+/* ── Sidebar ── */
+.sidebar{width:240px;min-height:100vh;background:#002B5C;display:flex;flex-direction:column;flex-shrink:0;position:fixed;top:0;left:0;bottom:0;z-index:100;}
+.sidebar-logo{padding:22px 20px 18px;border-bottom:1px solid rgba(255,255,255,.1);}
+.sidebar-wordmark{font-family:Georgia,serif;font-size:20px;font-weight:700;color:#fff;letter-spacing:.5px;}
+.sidebar-sub{font-size:10px;color:rgba(255,255,255,.45);letter-spacing:.8px;text-transform:uppercase;margin-top:2px;}
+.sidebar-tricolour{display:flex;height:3px;margin:0 -0px;}
+.sidebar-tricolour div{flex:1;}
+.sidebar-nav{flex:1;padding:12px 0;overflow-y:auto;}
+.nav-section{font-size:10px;font-weight:700;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:.8px;padding:14px 20px 6px;}
+.nav-item{display:flex;align-items:center;gap:11px;padding:10px 20px;cursor:pointer;border-radius:0;transition:background .15s;position:relative;font-size:13.5px;font-weight:500;color:rgba(255,255,255,.7);}
+.nav-item:hover{background:rgba(255,255,255,.08);color:#fff;}
+.nav-item.active{background:rgba(245,166,35,.15);color:#F5A623;font-weight:600;}
+.nav-item.active::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:#F5A623;border-radius:0 2px 2px 0;}
+.nav-icon{font-size:16px;width:20px;text-align:center;}
+.nav-badge{margin-left:auto;background:#ef4444;color:#fff;font-size:10px;font-weight:700;border-radius:10px;padding:1px 6px;}
+.sidebar-footer{padding:16px 20px;border-top:1px solid rgba(255,255,255,.1);}
+.sidebar-user{display:flex;align-items:center;gap:10px;}
+.sidebar-avatar{width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,#F5A623,#e8961a);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:#002B5C;}
+.sidebar-user-name{font-size:13px;font-weight:600;color:#fff;}
+.sidebar-user-role{font-size:11px;color:rgba(255,255,255,.45);}
+
+/* ── Main ── */
+.main{margin-left:240px;flex:1;display:flex;flex-direction:column;min-height:100vh;}
+.topbar{background:#fff;border-bottom:1px solid #eef0f4;padding:0 28px;height:60px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;position:sticky;top:0;z-index:50;}
+.topbar-title{font-size:17px;font-weight:700;color:#111827;}
+.topbar-right{display:flex;align-items:center;gap:12px;}
+.topbar-search{display:flex;align-items:center;gap:8px;background:#f9fafb;border:1px solid #e5e7eb;border-radius:10px;padding:7px 14px;font-size:13px;color:#6b7280;cursor:pointer;min-width:220px;}
+.topbar-btn{width:36px;height:36px;border-radius:10px;background:#f9fafb;border:1px solid #e5e7eb;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:15px;position:relative;}
+.topbar-notif-dot{position:absolute;top:6px;right:7px;width:7px;height:7px;background:#ef4444;border-radius:50%;border:1.5px solid #fff;}
+.content{flex:1;padding:24px 28px;}
+
+/* ── Pages ── */
+.page{display:none;}
+.page.active{display:block;}
+
+/* ── Stat cards ── */
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:22px;}
+.stat-card{background:#fff;border-radius:16px;padding:18px 20px;border:1px solid #eef0f4;box-shadow:0 1px 4px rgba(0,0,0,.04);}
+.stat-label{font-size:11px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.6px;margin-bottom:8px;}
+.stat-value{font-size:28px;font-weight:800;color:#111827;line-height:1;margin-bottom:4px;}
+.stat-delta{font-size:12px;font-weight:600;}
+.stat-delta.up{color:#058541;}
+.stat-delta.down{color:#ef4444;}
+.stat-icon{float:right;font-size:26px;margin-top:-4px;}
+
+/* ── Section header ── */
+.section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+.section-title{font-size:15px;font-weight:700;color:#111827;}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;border:none;transition:all .15s;}
+.btn-primary{background:#002B5C;color:#fff;}
+.btn-primary:hover{background:#003d80;}
+.btn-gold{background:#F5A623;color:#002B5C;}
+.btn-gold:hover{background:#e8961a;}
+.btn-outline{background:#fff;border:1px solid #e5e7eb;color:#374151;}
+.btn-outline:hover{background:#f9fafb;}
+.btn-sm{padding:6px 12px;font-size:12px;}
+
+/* ── Table ── */
+.table-wrap{background:#fff;border-radius:16px;border:1px solid #eef0f4;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.04);}
+.table-toolbar{display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid #eef0f4;}
+.filter-pill{display:flex;align-items:center;gap:6px;background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;padding:7px 12px;font-size:12px;color:#374151;cursor:pointer;}
+.filter-pill select{border:none;background:transparent;font-size:12px;color:#374151;cursor:pointer;outline:none;}
+table{width:100%;border-collapse:collapse;}
+th{font-size:11px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.5px;padding:11px 16px;text-align:left;background:#f9fafb;border-bottom:1px solid #eef0f4;}
+td{font-size:13px;color:#374151;padding:12px 16px;border-bottom:1px solid #f5f6fa;vertical-align:middle;}
+tr:last-child td{border-bottom:none;}
+tr:hover td{background:#fafafa;}
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:700;}
+.badge-red{background:#fee2e2;color:#dc2626;}
+.badge-orange{background:#ffedd5;color:#ea580c;}
+.badge-yellow{background:#fef9c3;color:#ca8a04;}
+.badge-green{background:#dcfce7;color:#16a34a;}
+.badge-blue{background:#dbeafe;color:#2563eb;}
+.badge-gray{background:#f3f4f6;color:#6b7280;}
+.sev-bar{width:4px;height:36px;border-radius:2px;flex-shrink:0;}
+
+/* ── Charts placeholder ── */
+.chart-grid{display:grid;grid-template-columns:2fr 1fr;gap:16px;margin-bottom:22px;}
+.chart-card{background:#fff;border-radius:16px;border:1px solid #eef0f4;padding:20px;box-shadow:0 1px 4px rgba(0,0,0,.04);}
+.chart-title{font-size:14px;font-weight:700;color:#111827;margin-bottom:4px;}
+.chart-sub{font-size:12px;color:#9ca3af;margin-bottom:16px;}
+.chart-bars{display:flex;align-items:flex-end;gap:6px;height:120px;}
+.chart-bar-wrap{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;}
+.chart-bar{width:100%;border-radius:6px 6px 0 0;background:#002B5C;transition:height .3s;}
+.chart-bar-label{font-size:10px;color:#9ca3af;}
+.donut-wrap{display:flex;flex-direction:column;justify-content:center;gap:10px;}
+.donut-svg{width:120px;height:120px;margin:0 auto 10px;}
+.donut-legend{display:flex;flex-direction:column;gap:6px;}
+.donut-item{display:flex;align-items:center;gap:8px;font-size:12px;color:#374151;}
+.donut-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+
+/* ── Map placeholder ── */
+.map-container{background:#dce8ef;border-radius:16px;position:relative;overflow:hidden;height:420px;border:1px solid #eef0f4;}
+.map-grid-bg{position:absolute;inset:0;background-image:repeating-linear-gradient(0deg,transparent,transparent 40px,#c8d4da 40px,#c8d4da 41px),repeating-linear-gradient(90deg,transparent,transparent 40px,#c8d4da 40px,#c8d4da 41px);opacity:.5;}
+.map-road-h{position:absolute;left:0;right:0;height:16px;background:rgba(255,255,255,.75);}
+.map-road-v{position:absolute;top:0;bottom:0;width:16px;background:rgba(255,255,255,.75);}
+.map-pin{position:absolute;display:flex;flex-direction:column;align-items:center;cursor:pointer;transform:translateX(-50%);}
+.map-pin-dot{width:22px;height:22px;border-radius:50%;border:3px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.3);display:flex;align-items:center;justify-content:center;font-size:9px;color:#fff;font-weight:800;}
+.map-pin-tail{width:3px;height:10px;}
+.map-cluster{position:absolute;border-radius:50%;border:3px solid #fff;box-shadow:0 2px 10px rgba(0,0,0,.25);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:#fff;cursor:pointer;transform:translate(-50%,-50%);}
+.map-controls{position:absolute;top:14px;right:14px;display:flex;flex-direction:column;gap:6px;}
+.map-ctrl-btn{width:34px;height:34px;background:#fff;border-radius:8px;box-shadow:0 1px 6px rgba(0,0,0,.15);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;}
+.map-legend{position:absolute;bottom:14px;left:14px;background:#fff;border-radius:12px;padding:10px 14px;box-shadow:0 2px 8px rgba(0,0,0,.1);}
+.map-legend-title{font-size:11px;font-weight:700;color:#374151;margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px;}
+.map-legend-item{display:flex;align-items:center;gap:6px;font-size:11px;color:#6b7280;margin-bottom:3px;}
+.map-legend-dot{width:10px;height:10px;border-radius:50%;}
+.map-stats{position:absolute;top:14px;left:14px;background:#fff;border-radius:12px;padding:10px 14px;box-shadow:0 2px 8px rgba(0,0,0,.1);display:flex;gap:16px;}
+.map-stat{text-align:center;}
+.map-stat-val{font-size:18px;font-weight:800;color:#002B5C;}
+.map-stat-lbl{font-size:10px;color:#9ca3af;text-transform:uppercase;letter-spacing:.4px;}
+
+/* ── Login ── */
+.login-page{background:linear-gradient(135deg,#001d3d 0%,#002B5C 60%,#003d80 100%);min-height:100vh;display:flex;align-items:center;justify-content:center;margin-left:-240px;width:100vw;}
+.login-card{background:#fff;border-radius:24px;padding:40px;width:400px;box-shadow:0 20px 60px rgba(0,0,0,.3);}
+.login-logo{text-align:center;margin-bottom:28px;}
+.login-wordmark{font-family:Georgia,serif;font-size:28px;font-weight:700;color:#002B5C;}
+.login-subtitle{font-size:12px;color:#9ca3af;margin-top:4px;letter-spacing:.5px;text-transform:uppercase;}
+.login-input-group{margin-bottom:14px;}
+.login-label{font-size:12px;font-weight:700;color:#374151;margin-bottom:6px;display:block;}
+.login-input{width:100%;border:1.5px solid #e5e7eb;border-radius:12px;padding:12px 16px;font-size:14px;outline:none;font-family:inherit;color:#111827;transition:border-color .15s;}
+.login-input:focus{border-color:#002B5C;}
+.login-btn{width:100%;background:#002B5C;color:#fff;border:none;border-radius:14px;padding:14px;font-size:15px;font-weight:700;cursor:pointer;margin-top:6px;font-family:inherit;transition:background .15s;}
+.login-btn:hover{background:#003d80;}
+.login-tricolour{display:flex;height:4px;border-radius:2px;overflow:hidden;margin-bottom:24px;}
+.login-tricolour div{flex:1;}
+
+/* ── SLA Page ── */
+.sla-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px;}
+.sla-card{background:#fff;border-radius:14px;padding:16px;border:1px solid #eef0f4;border-left:4px solid;}
+.sla-card-val{font-size:26px;font-weight:800;margin-bottom:2px;}
+.sla-card-lbl{font-size:12px;color:#6b7280;}
+.progress-bar{background:#f3f4f6;border-radius:99px;height:8px;overflow:hidden;margin-top:8px;}
+.progress-fill{height:100%;border-radius:99px;}
+
+/* ── Officers ── */
+.officer-card{background:#fff;border-radius:14px;padding:16px;border:1px solid #eef0f4;display:flex;align-items:center;gap:14px;margin-bottom:10px;}
+.officer-avatar{width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,#002B5C,#003d80);display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:800;color:#F5A623;flex-shrink:0;}
+.officer-name{font-size:14px;font-weight:700;color:#111827;}
+.officer-role{font-size:12px;color:#6b7280;margin-top:1px;}
+.officer-stats{margin-left:auto;text-align:right;}
+.officer-stat-val{font-size:16px;font-weight:800;color:#002B5C;}
+.officer-stat-lbl{font-size:10px;color:#9ca3af;text-transform:uppercase;letter-spacing:.4px;}
+
+/* ── Leaderboard ── */
+.lb-row{display:flex;align-items:center;gap:14px;padding:13px 16px;border-bottom:1px solid #f5f6fa;background:#fff;}
+.lb-row:last-child{border-bottom:none;}
+.lb-row.you{background:#FFF8E7;}
+.lb-rank{width:32px;text-align:center;font-size:13px;font-weight:700;color:#9ca3af;}
+.lb-name{flex:1;font-size:14px;font-weight:500;color:#374151;}
+.lb-pts{font-size:13px;font-weight:700;color:#002B5C;}
+.lb-reports{font-size:12px;color:#9ca3af;margin-left:12px;}
+
+/* ── Fraud ── */
+.fraud-alert{background:#fff;border-radius:14px;border:1px solid #fee2e2;border-left:4px solid #dc2626;padding:14px 16px;margin-bottom:10px;display:flex;align-items:flex-start;gap:12px;}
+.fraud-icon{font-size:20px;flex-shrink:0;margin-top:1px;}
+.fraud-title{font-size:13px;font-weight:700;color:#111827;margin-bottom:3px;}
+.fraud-desc{font-size:12px;color:#6b7280;line-height:1.5;}
+.fraud-time{font-size:11px;color:#9ca3af;margin-top:4px;}
+
+/* ── Analytics ── */
+.analytics-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px;}
+.analytics-card{background:#fff;border-radius:16px;border:1px solid #eef0f4;padding:20px;}
+.timeline{display:flex;flex-direction:column;gap:0;}
+.timeline-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #f5f6fa;}
+.timeline-row:last-child{border-bottom:none;}
+.timeline-label{font-size:12px;color:#374151;width:80px;flex-shrink:0;}
+.timeline-bar-wrap{flex:1;background:#f3f4f6;border-radius:99px;height:8px;overflow:hidden;}
+.timeline-bar{height:100%;border-radius:99px;background:#002B5C;}
+.timeline-val{font-size:12px;font-weight:700;color:#002B5C;width:40px;text-align:right;}
+
+/* ── Responsive ── */
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+.three-col{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;}
+
+/* ── Pagination ── */
+.pagination{display:flex;align-items:center;gap:4px;padding:12px 16px;border-top:1px solid #eef0f4;}
+.page-btn{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;cursor:pointer;border:1px solid #e5e7eb;background:#fff;color:#374151;}
+.page-btn.active{background:#002B5C;color:#fff;border-color:#002B5C;}
+.page-btn:hover:not(.active){background:#f9fafb;}
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar{width:6px;height:6px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:#d1d5db;border-radius:3px;}
+</style>
+</head>
+<body>
+
+<!-- ── SIDEBAR ── -->
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-logo">
+    <div class="sidebar-wordmark">Mana Rasta</div>
+    <div class="sidebar-sub">GHMC Admin Portal</div>
+  </div>
+  <div class="sidebar-tricolour">
+    <div style="background:#FF9933;"></div>
+    <div style="background:#fff;"></div>
+    <div style="background:#058541;"></div>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-section">Overview</div>
+    <div class="nav-item active" onclick="nav('dashboard')"><span class="nav-icon">📊</span>Dashboard</div>
+    <div class="nav-item" onclick="nav('reports')"><span class="nav-icon">📋</span>Reports<span class="nav-badge">14</span></div>
+    <div class="nav-item" onclick="nav('map')"><span class="nav-icon">🗺️</span>Live Map</div>
+
+    <div class="nav-section">Management</div>
+    <div class="nav-item" onclick="nav('officers')"><span class="nav-icon">👷</span>Officers</div>
+    <div class="nav-item" onclick="nav('sla')"><span class="nav-icon">⏱️</span>SLA Tracker<span class="nav-badge" style="background:#f59e0b;">3</span></div>
+    <div class="nav-item" onclick="nav('fraud')"><span class="nav-icon">🚨</span>Fraud Detection<span class="nav-badge">2</span></div>
+
+    <div class="nav-section">Insights</div>
+    <div class="nav-item" onclick="nav('analytics')"><span class="nav-icon">📈</span>Analytics</div>
+    <div class="nav-item" onclick="nav('leaderboard')"><span class="nav-icon">🏆</span>Leaderboard</div>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="sidebar-user">
+      <div class="sidebar-avatar">R</div>
+      <div>
+        <div class="sidebar-user-name">Rajesh Kumar</div>
+        <div class="sidebar-user-role">GHMC Commissioner</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── MAIN ── -->
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-title" id="topbarTitle">Dashboard</div>
+    <div class="topbar-right">
+      <div class="topbar-search">🔍 &nbsp;Search reports, wards, officers…</div>
+      <div class="topbar-btn">🔔<div class="topbar-notif-dot"></div></div>
+      <div class="topbar-btn">⚙️</div>
+      <div class="btn btn-gold btn-sm" onclick="nav('login')">← Login</div>
+    </div>
+  </div>
+
+  <div class="content">
+
+  <!-- ════════════ DASHBOARD ════════════ -->
+  <div class="page active" id="page-dashboard">
+    <!-- Stat cards -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-label">Total Reports <span class="stat-icon">📋</span></div>
+        <div class="stat-value">1,284</div>
+        <div class="stat-delta up">↑ 12% vs last month</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Fixed This Month <span class="stat-icon">✅</span></div>
+        <div class="stat-value" style="color:#058541;">847</div>
+        <div class="stat-delta up">↑ 8% vs last month</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">SLA Breaches <span class="stat-icon">⚠️</span></div>
+        <div class="stat-value" style="color:#ef4444;">23</div>
+        <div class="stat-delta down">↑ 3 new today</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Active Citizens <span class="stat-icon">👥</span></div>
+        <div class="stat-value" style="color:#F5A623;">3,491</div>
+        <div class="stat-delta up">↑ 341 this week</div>
+      </div>
+    </div>
+
+    <!-- Charts -->
+    <div class="chart-grid">
+      <div class="chart-card">
+        <div class="chart-title">Reports by Zone — April 2026</div>
+        <div class="chart-sub">Submitted vs Fixed</div>
+        <div class="chart-bars" id="barChart"></div>
+        <div style="display:flex;gap:16px;margin-top:12px;">
+          <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:#374151;"><div style="width:12px;height:12px;border-radius:3px;background:#002B5C;"></div>Submitted</div>
+          <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:#374151;"><div style="width:12px;height:12px;border-radius:3px;background:#F5A623;"></div>Fixed</div>
+        </div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">Severity Distribution</div>
+        <div class="chart-sub">All open reports</div>
+        <div class="donut-wrap">
+          <svg class="donut-svg" viewBox="0 0 120 120">
+            <circle cx="60" cy="60" r="45" fill="none" stroke="#fee2e2" stroke-width="18"/>
+            <circle cx="60" cy="60" r="45" fill="none" stroke="#ef4444" stroke-width="18" stroke-dasharray="56.5 226" stroke-dashoffset="0" transform="rotate(-90 60 60)"/>
+            <circle cx="60" cy="60" r="45" fill="none" stroke="#f97316" stroke-width="18" stroke-dasharray="79.1 226" stroke-dashoffset="-56.5" transform="rotate(-90 60 60)"/>
+            <circle cx="60" cy="60" r="45" fill="none" stroke="#f59e0b" stroke-width="18" stroke-dasharray="62.0 226" stroke-dashoffset="-135.6" transform="rotate(-90 60 60)"/>
+            <circle cx="60" cy="60" r="45" fill="none" stroke="#22c55e" stroke-width="18" stroke-dasharray="28.3 226" stroke-dashoffset="-197.6" transform="rotate(-90 60 60)"/>
+            <text x="60" y="64" text-anchor="middle" font-size="16" font-weight="800" fill="#111827">437</text>
+            <text x="60" y="78" text-anchor="middle" font-size="10" fill="#9ca3af">Open</text>
+          </svg>
+          <div class="donut-legend">
+            <div class="donut-item"><div class="donut-dot" style="background:#ef4444;"></div>Critical — 109 (25%)</div>
+            <div class="donut-item"><div class="donut-dot" style="background:#f97316;"></div>High — 157 (36%)</div>
+            <div class="donut-item"><div class="donut-dot" style="background:#f59e0b;"></div>Medium — 123 (28%)</div>
+            <div class="donut-item"><div class="donut-dot" style="background:#22c55e;"></div>Low — 48 (11%)</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recent Reports -->
+    <div class="section-header">
+      <div class="section-title">Recent Reports</div>
+      <div class="btn btn-outline btn-sm" onclick="nav('reports')">View all →</div>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>ID</th><th>Location</th><th>Ward</th><th>Severity</th><th>Status</th><th>Reported</th><th>Action</th></tr></thead>
+        <tbody>
+          <tr><td><span style="font-family:monospace;font-size:12px;">MR-2025-A9F3</span></td><td>MG Road, Kukatpally</td><td>Ward 14</td><td><span class="badge badge-red">🔴 Critical</span></td><td><span class="badge badge-yellow">⏳ Assigned</span></td><td>2 hrs ago</td><td><span class="btn btn-outline btn-sm">View</span></td></tr>
+          <tr><td><span style="font-family:monospace;font-size:12px;">MR-2025-B2K1</span></td><td>Jubilee Hills Rd 36</td><td>Ward 7</td><td><span class="badge badge-orange">🟠 High</span></td><td><span class="badge badge-blue">🔧 In Repair</span></td><td>5 hrs ago</td><td><span class="btn btn-outline btn-sm">View</span></td></tr>
+          <tr><td><span style="font-family:monospace;font-size:12px;">MR-2025-C4L8</span></td><td>Banjara Hills Rd 12</td><td>Ward 9</td><td><span class="badge badge-yellow">🟡 Medium</span></td><td><span class="badge badge-green">✅ Fixed</span></td><td>Yesterday</td><td><span class="btn btn-outline btn-sm">View</span></td></tr>
+          <tr><td><span style="font-family:monospace;font-size:12px;">MR-2025-D7M2</span></td><td>Secunderabad Main Rd</td><td>Ward 22</td><td><span class="badge badge-red">🔴 Critical</span></td><td><span class="badge badge-red">🚨 SLA Breach</span></td><td>2 days ago</td><td><span class="btn btn-outline btn-sm">View</span></td></tr>
+          <tr><td><span style="font-family:monospace;font-size:12px;">MR-2025-E1N5</span></td><td>LB Nagar Circle</td><td>Ward 31</td><td><span class="badge badge-yellow">🟡 Medium</span></td><td><span class="badge badge-gray">📥 Pending</span></td><td>3 days ago</td><td><span class="btn btn-outline btn-sm">View</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ════════════ REPORTS ════════════ -->
+  <div class="page" id="page-reports">
+    <div class="section-header" style="margin-bottom:16px;">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div class="section-title">All Reports</div>
+        <span class="badge badge-blue">1,284 total</span>
+      </div>
+      <div style="display:flex;gap:8px;">
+        <div class="btn btn-outline btn-sm">⬇ Export CSV</div>
+        <div class="btn btn-primary btn-sm">+ New Report</div>
+      </div>
+    </div>
+    <div class="table-wrap">
+      <div class="table-toolbar">
+        <div class="filter-pill">📍 Zone: <select><option>All Zones</option><option>Kukatpally</option><option>Serilingampally</option><option>Charminar</option><option>LB Nagar</option><option>Secunderabad</option><option>Khairatabad</option></select></div>
+        <div class="filter-pill">🚦 Status: <select><option>All</option><option>Pending</option><option>Assigned</option><option>In Repair</option><option>Fixed</option><option>SLA Breach</option></select></div>
+        <div class="filter-pill">⚠️ Severity: <select><option>All</option><option>Critical</option><option>High</option><option>Medium</option><option>Low</option></select></div>
+        <div class="filter-pill">📅 Date: <select><option>Last 30 days</option><option>Last 7 days</option><option>Today</option><option>Custom</option></select></div>
+        <div class="btn btn-outline btn-sm" style="margin-left:auto;">🗺️ Map view</div>
+      </div>
+      <table>
+        <thead><tr><th>ID</th><th>Photo</th><th>Location</th><th>Ward / Zone</th><th>Severity</th><th>Road Type</th><th>Status</th><th>AE Assigned</th><th>Reported</th><th></th></tr></thead>
+        <tbody>
+          <tr><td><span style="font-family:monospace;font-size:11px;color:#6b7280;">MR-2025-A9F3</span></td><td><div style="width:40px;height:32px;background:#374151;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:16px;">🛣️</div></td><td><div style="font-weight:600;font-size:13px;">MG Road</div><div style="font-size:11px;color:#9ca3af;">Kukatpally</div></td><td><div>Ward 14</div><div style="font-size:11px;color:#9ca3af;">Kukatpally Zone</div></td><td><span class="badge badge-red">🔴 Critical</span></td><td><span style="font-size:12px;color:#6b7280;">🏘 Local</span></td><td><span class="badge badge-yellow">⏳ Assigned</span></td><td>AE Rajesh K.</td><td style="font-size:12px;color:#9ca3af;">2h ago</td><td><span class="btn btn-outline btn-sm">View</span></td></tr>
+          <tr><td><span style="font-family:monospace;font-size:11px;color:#6b7280;">MR-2025-B2K1</span></td><td><div style="width:40px;height:32px;background:#374151;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:16px;">🛣️</div></td><td><div style="font-weight:600;font-size:13px;">Jubilee Hills Rd 36</div><div style="font-size:11px;color:#9ca3af;">Banjara Hills</div></td><td><div>Ward 7</div><div style="font-size:11px;color:#9ca3af;">Khairatabad Zone</div></td><td><span class="badge badge-orange">🟠 High</span></td><td><span style="font-size:12px;color:#6b7280;">🛣 Main Road</span></td><td><span class="badge badge-blue">🔧 In Repair</span></td><td>AE Suresh P.</td><td style="font-size:12px;color:#9ca3af;">5h ago</td><td><span class="btn btn-outline btn-sm">View</span></td></tr>
+          <tr><td><span style="font-family:monospace;font-size:11px;color:#6b7280;">MR-2025-C4L8</span></td><td><div style="width:40px;height:32px;background:#374151;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:16px;">🛣️</div></td><td><div style="font-weight:600;font-size:13px;">Banjara Hills Rd 12</div><div style="font-size:11px;color:#9ca3af;">Banjara Hills</div></td><td><div>Ward 9</div><div style="font-size:11px;color:#9ca3af;">Khairatabad Zone</div></td><td><span class="badge badge-yellow">🟡 Medium</span></td><td><span style="font-size:12px;color:#6b7280;">🏘 Local</span></td><td><span class="badge badge-green">✅ Fixed</span></td><td>AE Ramesh T.</td><td style="font-size:12px;color:#9ca3af;">Yesterday</td><td><span class="btn btn-outline btn-sm">View</span></td></tr>
+          <tr><td><span style="font-family:monospace;font-size:11px;color:#6b7280;">MR-2025-D7M2</span></td><td><div style="width:40px;height:32px;background:#374151;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:16px;">🛣️</div></td><td><div style="font-weight:600;font-size:13px;">Secunderabad Main Rd</div><div style="font-size:11px;color:#9ca3af;">Secunderabad</div></td><td><div>Ward 22</div><div style="font-size:11px;color:#9ca3af;">Secunderabad Zone</div></td><td><span class="badge badge-red">🔴 Critical</span></td><td><span style="font-size:12px;color:#6b7280;">🛤 Highway</span></td><td><span class="badge badge-red">🚨 SLA Breach</span></td><td>AE Venkat R.</td><td style="font-size:12px;color:#9ca3af;">2d ago</td><td><span class="btn btn-outline btn-sm">View</span></td></tr>
+          <tr><td><span style="font-family:monospace;font-size:11px;color:#6b7280;">MR-2025-E1N5</span></td><td><div style="width:40px;height:32px;background:#374151;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:16px;">🛣️</div></td><td><div style="font-weight:600;font-size:13px;">LB Nagar Circle</div><div style="font-size:11px;color:#9ca3af;">LB Nagar</div></td><td><div>Ward 31</div><div style="font-size:11px;color:#9ca3af;">LB Nagar Zone</div></td><td><span class="badge badge-yellow">🟡 Medium</span></td><td><span style="font-size:12px;color:#6b7280;">🛣 Main Road</span></td><td><span class="badge badge-gray">📥 Pending</span></td><td>—</td><td style="font-size:12px;color:#9ca3af;">3d ago</td><td><span class="btn btn-outline btn-sm">View</span></td></tr>
+          <tr><td><span style="font-family:monospace;font-size:11px;color:#6b7280;">MR-2025-F3P9</span></td><td><div style="width:40px;height:32px;background:#374151;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:16px;">🛣️</div></td><td><div style="font-weight:600;font-size:13px;">Charminar Rd</div><div style="font-size:11px;color:#9ca3af;">Old City</div></td><td><div>Ward 45</div><div style="font-size:11px;color:#9ca3af;">Charminar Zone</div></td><td><span class="badge badge-orange">🟠 High</span></td><td><span style="font-size:12px;color:#6b7280;">🛣 Main Road</span></td><td><span class="badge badge-blue">🔧 In Repair</span></td><td>AE Salim M.</td><td style="font-size:12px;color:#9ca3af;">3d ago</td><td><span class="btn btn-outline btn-sm">View</span></td></tr>
+        </tbody>
+      </table>
+      <div class="pagination">
+        <span style="font-size:12px;color:#9ca3af;margin-right:auto;">Showing 1–6 of 1,284</span>
+        <div class="page-btn active">1</div>
+        <div class="page-btn">2</div>
+        <div class="page-btn">3</div>
+        <div class="page-btn">…</div>
+        <div class="page-btn">128</div>
+        <div class="page-btn">›</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════ MAP ════════════ -->
+  <div class="page" id="page-map">
+    <div class="section-header" style="margin-bottom:16px;">
+      <div class="section-title">Live Pothole Map — Hyderabad</div>
+      <div style="display:flex;gap:8px;">
+        <div class="btn btn-outline btn-sm">🔴 Critical only</div>
+        <div class="btn btn-outline btn-sm">📅 Today</div>
+        <div class="btn btn-primary btn-sm">⬇ Export KML</div>
+      </div>
+    </div>
+    <div class="map-container">
+      <div class="map-grid-bg"></div>
+      <!-- Roads -->
+      <div class="map-road-h" style="top:38%;"></div>
+      <div class="map-road-h" style="top:62%;"></div>
+      <div class="map-road-v" style="left:30%;"></div>
+      <div class="map-road-v" style="left:60%;"></div>
+      <!-- Clusters -->
+      <div class="map-cluster" style="width:52px;height:52px;background:#ef4444;top:35%;left:28%;">12</div>
+      <div class="map-cluster" style="width:44px;height:44px;background:#f97316;top:58%;left:59%;">8</div>
+      <div class="map-cluster" style="width:36px;height:36px;background:#f59e0b;top:25%;left:62%;">5</div>
+      <div class="map-cluster" style="width:30px;height:30px;background:#22c55e;top:70%;left:32%;">3</div>
+      <!-- Individual pins -->
+      <div class="map-pin" style="top:42%;left:48%;">
+        <div class="map-pin-dot" style="background:#ef4444;">!</div>
+        <div class="map-pin-tail" style="background:#ef4444;"></div>
+      </div>
+      <div class="map-pin" style="top:52%;left:41%;">
+        <div class="map-pin-dot" style="background:#f97316;">H</div>
+        <div class="map-pin-tail" style="background:#f97316;"></div>
+      </div>
+      <div class="map-pin" style="top:38%;left:70%;">
+        <div class="map-pin-dot" style="background:#f59e0b;">M</div>
+        <div class="map-pin-tail" style="background:#f59e0b;"></div>
+      </div>
+      <!-- Stats overlay -->
+      <div class="map-stats">
+        <div class="map-stat"><div class="map-stat-val">437</div><div class="map-stat-lbl">Open</div></div>
+        <div class="map-stat"><div class="map-stat-val" style="color:#ef4444;">23</div><div class="map-stat-lbl">Critical</div></div>
+        <div class="map-stat"><div class="map-stat-val" style="color:#058541;">847</div><div class="map-stat-lbl">Fixed</div></div>
+      </div>
+      <!-- Controls -->
+      <div class="map-controls">
+        <div class="map-ctrl-btn">＋</div>
+        <div class="map-ctrl-btn">－</div>
+        <div class="map-ctrl-btn">📍</div>
+        <div class="map-ctrl-btn">🔲</div>
+      </div>
+      <!-- Legend -->
+      <div class="map-legend">
+        <div class="map-legend-title">Severity</div>
+        <div class="map-legend-item"><div class="map-legend-dot" style="background:#ef4444;"></div>Critical</div>
+        <div class="map-legend-item"><div class="map-legend-dot" style="background:#f97316;"></div>High</div>
+        <div class="map-legend-item"><div class="map-legend-dot" style="background:#f59e0b;"></div>Medium</div>
+        <div class="map-legend-item"><div class="map-legend-dot" style="background:#22c55e;"></div>Low / Fixed</div>
+      </div>
+      <!-- Watermark -->
+      <div style="position:absolute;bottom:14px;right:14px;font-size:11px;color:rgba(0,0,0,.3);">© GHMC Mana Rasta · OpenStreetMap</div>
+    </div>
+  </div>
+
+  <!-- ════════════ OFFICERS ════════════ -->
+  <div class="page" id="page-officers">
+    <div class="section-header" style="margin-bottom:16px;">
+      <div class="section-title">Ward Officers</div>
+      <div class="btn btn-primary btn-sm">+ Add Officer</div>
+    </div>
+    <div class="two-col">
+      <div>
+        <div style="font-size:12px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.6px;margin-bottom:10px;">Kukatpally Zone</div>
+        <div class="officer-card"><div class="officer-avatar">RK</div><div><div class="officer-name">Rajesh Kumar</div><div class="officer-role">AE · Ward 14, 15, 16</div></div><div class="officer-stats"><div class="officer-stat-val" style="color:#058541;">42</div><div class="officer-stat-lbl">Fixed</div></div></div>
+        <div class="officer-card"><div class="officer-avatar">SP</div><div><div class="officer-name">Suresh Prasad</div><div class="officer-role">AE · Ward 17, 18</div></div><div class="officer-stats"><div class="officer-stat-val">28</div><div class="officer-stat-lbl">Fixed</div></div></div>
+        <div class="officer-card"><div class="officer-avatar">MT</div><div><div class="officer-name">Meena Thankam</div><div class="officer-role">DEE · Kukatpally Circle</div></div><div class="officer-stats"><div class="officer-stat-val" style="color:#F5A623;">DEE</div><div class="officer-stat-lbl">Supervisor</div></div></div>
+      </div>
+      <div>
+        <div style="font-size:12px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.6px;margin-bottom:10px;">Khairatabad Zone</div>
+        <div class="officer-card"><div class="officer-avatar">VP</div><div><div class="officer-name">Venkat Rao</div><div class="officer-role">AE · Ward 7, 8, 9</div></div><div class="officer-stats"><div class="officer-stat-val" style="color:#058541;">38</div><div class="officer-stat-lbl">Fixed</div></div></div>
+        <div class="officer-card"><div class="officer-avatar">AR</div><div><div class="officer-name">Anitha Reddy</div><div class="officer-role">AE · Ward 10, 11</div></div><div class="officer-stats"><div class="officer-stat-val">19</div><div class="officer-stat-lbl">Fixed</div></div></div>
+        <div class="officer-card"><div class="officer-avatar">NS</div><div><div class="officer-name">Naresh Sharma</div><div class="officer-role">DEE · Khairatabad Circle</div></div><div class="officer-stats"><div class="officer-stat-val" style="color:#F5A623;">DEE</div><div class="officer-stat-lbl">Supervisor</div></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════ SLA ════════════ -->
+  <div class="page" id="page-sla">
+    <div class="section-header" style="margin-bottom:16px;">
+      <div class="section-title">SLA Tracker</div>
+      <div class="btn btn-outline btn-sm">⬇ Export Report</div>
+    </div>
+    <div class="sla-grid">
+      <div class="sla-card" style="border-left-color:#ef4444;">
+        <div class="sla-card-lbl">Critical (24h SLA)</div>
+        <div class="sla-card-val" style="color:#ef4444;">109</div>
+        <div class="sla-card-lbl">23 breached · 86 on track</div>
+        <div class="progress-bar"><div class="progress-fill" style="width:79%;background:#ef4444;"></div></div>
+      </div>
+      <div class="sla-card" style="border-left-color:#f97316;">
+        <div class="sla-card-lbl">High (48h SLA)</div>
+        <div class="sla-card-val" style="color:#f97316;">157</div>
+        <div class="sla-card-lbl">0 breached · 157 on track</div>
+        <div class="progress-bar"><div class="progress-fill" style="width:100%;background:#f97316;"></div></div>
+      </div>
+      <div class="sla-card" style="border-left-color:#f59e0b;">
+        <div class="sla-card-lbl">Medium (96h SLA)</div>
+        <div class="sla-card-val" style="color:#f59e0b;">123</div>
+        <div class="sla-card-lbl">0 breached · 123 on track</div>
+        <div class="progress-bar"><div class="progress-fill" style="width:100%;background:#f59e0b;"></div></div>
+      </div>
+      <div class="sla-card" style="border-left-color:#22c55e;">
+        <div class="sla-card-lbl">Low (7d SLA)</div>
+        <div class="sla-card-val" style="color:#22c55e;">48</div>
+        <div class="sla-card-lbl">0 breached · 48 on track</div>
+        <div class="progress-bar"><div class="progress-fill" style="width:100%;background:#22c55e;"></div></div>
+      </div>
+    </div>
+    <div class="section-title" style="margin-bottom:12px;">Breached Reports — Immediate Action Required</div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>ID</th><th>Location</th><th>Severity</th><th>AE Assigned</th><th>Reported</th><th>SLA Deadline</th><th>Overdue By</th><th>Action</th></tr></thead>
+        <tbody>
+          <tr><td><span style="font-family:monospace;font-size:11px;">MR-2025-D7M2</span></td><td>Secunderabad Main Rd, Ward 22</td><td><span class="badge badge-red">🔴 Critical</span></td><td>AE Venkat R.</td><td>2 days ago</td><td>Apr 13, 09:00</td><td><span style="color:#ef4444;font-weight:700;">+26 hrs</span></td><td><span class="btn btn-sm" style="background:#fee2e2;color:#dc2626;">Escalate</span></td></tr>
+          <tr><td><span style="font-family:monospace;font-size:11px;">MR-2025-G9Q3</span></td><td>Dilsukhnagar Rd, Ward 38</td><td><span class="badge badge-red">🔴 Critical</span></td><td>AE Farhan A.</td><td>3 days ago</td><td>Apr 12, 14:00</td><td><span style="color:#ef4444;font-weight:700;">+44 hrs</span></td><td><span class="btn btn-sm" style="background:#fee2e2;color:#dc2626;">Escalate</span></td></tr>
+          <tr><td><span style="font-family:monospace;font-size:11px;">MR-2025-H2R7</span></td><td>Himayatnagar Ring Rd</td><td><span class="badge badge-red">🔴 Critical</span></td><td>AE Priya S.</td><td>4 days ago</td><td>Apr 11, 11:30</td><td><span style="color:#ef4444;font-weight:700;">+60 hrs</span></td><td><span class="btn btn-sm" style="background:#fee2e2;color:#dc2626;">Escalate</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ════════════ FRAUD ════════════ -->
+  <div class="page" id="page-fraud">
+    <div class="section-header" style="margin-bottom:16px;">
+      <div class="section-title">Fraud Detection</div>
+      <div style="display:flex;gap:8px;">
+        <span class="badge badge-red" style="padding:6px 12px;font-size:12px;">2 Active Alerts</span>
+        <div class="btn btn-outline btn-sm">View History</div>
+      </div>
+    </div>
+    <div class="two-col" style="margin-bottom:20px;">
+      <div class="fraud-alert">
+        <div class="fraud-icon">🚨</div>
+        <div>
+          <div class="fraud-title">Duplicate Submission Detected</div>
+          <div class="fraud-desc">User +91 98765 43210 submitted 7 reports within 50 metres of each other in Ward 14 within 2 hours. Possible bulk spam.</div>
+          <div class="fraud-time">Detected: Apr 15, 2026 · 10:42 AM</div>
+          <div style="display:flex;gap:8px;margin-top:10px;">
+            <span class="btn btn-sm" style="background:#fee2e2;color:#dc2626;">Suspend User</span>
+            <span class="btn btn-outline btn-sm">Dismiss</span>
+          </div>
+        </div>
+      </div>
+      <div class="fraud-alert">
+        <div class="fraud-icon">⚠️</div>
+        <div>
+          <div class="fraud-title">Suspicious GPS Coordinates</div>
+          <div class="fraud-desc">Report MR-2025-Z9K4 has GPS coordinates outside GHMC limits (17.2°N 78.1°E — Sangareddy district). Auto-flagged.</div>
+          <div class="fraud-time">Detected: Apr 14, 2026 · 03:18 PM</div>
+          <div style="display:flex;gap:8px;margin-top:10px;">
+            <span class="btn btn-sm" style="background:#fee2e2;color:#dc2626;">Reject Report</span>
+            <span class="btn btn-outline btn-sm">Investigate</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="section-title" style="margin-bottom:12px;">Fraud Risk Scores — Top Flagged Users</div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>User</th><th>Reports</th><th>Flags</th><th>Risk Score</th><th>Last Activity</th><th>Action</th></tr></thead>
+        <tbody>
+          <tr><td>+91 98765 43210</td><td>34</td><td>7 duplicates</td><td><span class="badge badge-red">HIGH — 87</span></td><td>2h ago</td><td><span class="btn btn-outline btn-sm">Review</span></td></tr>
+          <tr><td>+91 87654 32109</td><td>12</td><td>2 outside GHMC</td><td><span class="badge badge-orange">MEDIUM — 54</span></td><td>Yesterday</td><td><span class="btn btn-outline btn-sm">Review</span></td></tr>
+          <tr><td>+91 76543 21098</td><td>8</td><td>1 after hours</td><td><span class="badge badge-yellow">LOW — 22</span></td><td>3d ago</td><td><span class="btn btn-outline btn-sm">Review</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ════════════ ANALYTICS ════════════ -->
+  <div class="page" id="page-analytics">
+    <div class="section-header" style="margin-bottom:16px;">
+      <div class="section-title">Analytics</div>
+      <div style="display:flex;gap:8px;">
+        <div class="btn btn-outline btn-sm">📅 April 2026</div>
+        <div class="btn btn-outline btn-sm">⬇ Export PDF</div>
+      </div>
+    </div>
+    <div class="stats-grid">
+      <div class="stat-card"><div class="stat-label">Avg Fix Time <span class="stat-icon">⏱️</span></div><div class="stat-value">38h</div><div class="stat-delta up">↓ 6h vs last month</div></div>
+      <div class="stat-card"><div class="stat-label">Resolution Rate <span class="stat-icon">✅</span></div><div class="stat-value" style="color:#058541;">66%</div><div class="stat-delta up">↑ 4% vs last month</div></div>
+      <div class="stat-card"><div class="stat-label">Citizen Engagement <span class="stat-icon">👥</span></div><div class="stat-value" style="color:#F5A623;">3.4K</div><div class="stat-delta up">↑ 341 new users</div></div>
+      <div class="stat-card"><div class="stat-label">Cost Saved (est.) <span class="stat-icon">💰</span></div><div class="stat-value">₹2.1Cr</div><div class="stat-delta up">Early detection savings</div></div>
+    </div>
+    <div class="analytics-grid">
+      <div class="analytics-card">
+        <div class="chart-title">Reports by Day of Week</div>
+        <div class="chart-sub">Avg over last 4 weeks</div>
+        <div class="timeline" style="margin-top:12px;">
+          <div class="timeline-row"><div class="timeline-label">Monday</div><div class="timeline-bar-wrap"><div class="timeline-bar" style="width:72%;"></div></div><div class="timeline-val">148</div></div>
+          <div class="timeline-row"><div class="timeline-label">Tuesday</div><div class="timeline-bar-wrap"><div class="timeline-bar" style="width:85%;"></div></div><div class="timeline-val">174</div></div>
+          <div class="timeline-row"><div class="timeline-label">Wednesday</div><div class="timeline-bar-wrap"><div class="timeline-bar" style="width:91%;"></div></div><div class="timeline-val">186</div></div>
+          <div class="timeline-row"><div class="timeline-label">Thursday</div><div class="timeline-bar-wrap"><div class="timeline-bar" style="width:78%;"></div"></div><div class="timeline-val">159</div></div>
+          <div class="timeline-row"><div class="timeline-label">Friday</div><div class="timeline-bar-wrap"><div class="timeline-bar" style="width:100%;background:#F5A623;"></div></div><div class="timeline-val">204</div></div>
+          <div class="timeline-row"><div class="timeline-label">Saturday</div><div class="timeline-bar-wrap"><div class="timeline-bar" style="width:55%;"></div></div><div class="timeline-val">112</div></div>
+          <div class="timeline-row"><div class="timeline-label">Sunday</div><div class="timeline-bar-wrap"><div class="timeline-bar" style="width:38%;"></div></div><div class="timeline-val">77</div></div>
+        </div>
+      </div>
+      <div class="analytics-card">
+        <div class="chart-title">Top Reporting Wards</div>
+        <div class="chart-sub">April 2026</div>
+        <div class="timeline" style="margin-top:12px;">
+          <div class="timeline-row"><div class="timeline-label">Ward 14</div><div class="timeline-bar-wrap"><div class="timeline-bar" style="width:100%;background:#ef4444;"></div></div><div class="timeline-val">84</div></div>
+          <div class="timeline-row"><div class="timeline-label">Ward 7</div><div class="timeline-bar-wrap"><div class="timeline-bar" style="width:78%;background:#f97316;"></div></div><div class="timeline-val">66</div></div>
+          <div class="timeline-row"><div class="timeline-label">Ward 22</div><div class="timeline-bar-wrap"><div class="timeline-bar" style="width:62%;background:#f59e0b;"></div></div><div class="timeline-val">52</div></div>
+          <div class="timeline-row"><div class="timeline-label">Ward 31</div><div class="timeline-bar-wrap"><div class="timeline-bar" style="width:54%;"></div></div><div class="timeline-val">45</div></div>
+          <div class="timeline-row"><div class="timeline-label">Ward 9</div><div class="timeline-bar-wrap"><div class="timeline-bar" style="width:46%;"></div></div><div class="timeline-val">39</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════ LEADERBOARD ════════════ -->
+  <div class="page" id="page-leaderboard">
+    <div class="section-header" style="margin-bottom:16px;">
+      <div class="section-title">Citizen Leaderboard</div>
+      <div style="display:flex;gap:8px;">
+        <div class="btn btn-outline btn-sm">This Week</div>
+        <div class="btn btn-primary btn-sm">This Month</div>
+        <div class="btn btn-outline btn-sm">All Time</div>
+      </div>
+    </div>
+    <div class="two-col">
+      <div>
+        <div style="font-size:12px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.6px;margin-bottom:10px;">Kukatpally Zone — April 2026</div>
+        <div class="table-wrap">
+          <div class="lb-row"><div class="lb-rank">🥇</div><div class="lb-name">Priya Sharma</div><div class="lb-pts">880 pts</div><div class="lb-reports">44 reports</div></div>
+          <div class="lb-row"><div class="lb-rank">🥈</div><div class="lb-name">Vikram Nair</div><div class="lb-pts">760 pts</div><div class="lb-reports">38 reports</div></div>
+          <div class="lb-row"><div class="lb-rank">🥉</div><div class="lb-name">Ananya Reddy</div><div class="lb-pts">640 pts</div><div class="lb-reports">32 reports</div></div>
+          <div class="lb-row"><div class="lb-rank">#4</div><div class="lb-name">Sai Kumar</div><div class="lb-pts">520 pts</div><div class="lb-reports">26 reports</div></div>
+          <div class="lb-row you"><div class="lb-rank">#5</div><div class="lb-name">Advaith ⭐ (you)</div><div class="lb-pts">340 pts</div><div class="lb-reports">17 reports</div></div>
+          <div class="lb-row"><div class="lb-rank">#6</div><div class="lb-name">Meena Teja</div><div class="lb-pts">280 pts</div><div class="lb-reports">14 reports</div></div>
+          <div class="lb-row"><div class="lb-rank">#7</div><div class="lb-name">Ravi Kiran</div><div class="lb-pts">220 pts</div><div class="lb-reports">11 reports</div></div>
+        </div>
+      </div>
+      <div>
+        <div style="font-size:12px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.6px;margin-bottom:10px;">Hyderabad City — All Time</div>
+        <div class="table-wrap">
+          <div class="lb-row"><div class="lb-rank">🥇</div><div class="lb-name">Arjun Prasad</div><div class="lb-pts">17,820 pts</div><div class="lb-reports">891</div></div>
+          <div class="lb-row"><div class="lb-rank">🥈</div><div class="lb-name">Deepa Srinivas</div><div class="lb-pts">14,880 pts</div><div class="lb-reports">744</div></div>
+          <div class="lb-row"><div class="lb-rank">🥉</div><div class="lb-name">Kiran Babu</div><div class="lb-pts">12,240 pts</div><div class="lb-reports">612</div></div>
+          <div class="lb-row"><div class="lb-rank">#4</div><div class="lb-name">Sunita Rao</div><div class="lb-pts">10,060 pts</div><div class="lb-reports">503</div></div>
+          <div class="lb-row"><div class="lb-rank">#5</div><div class="lb-name">Vikram Nair</div><div class="lb-pts">6,240 pts</div><div class="lb-reports">312</div></div>
+          <div class="lb-row"><div class="lb-rank">#6</div><div class="lb-name">Lakshmi V.</div><div class="lb-pts">4,820 pts</div><div class="lb-reports">241</div></div>
+          <div class="lb-row"><div class="lb-rank">#7</div><div class="lb-name">Ananya Reddy</div><div class="lb-pts">3,960 pts</div><div class="lb-reports">198</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════ LOGIN ════════════ -->
+  <div class="page" id="page-login">
+    <div class="login-page">
+      <div class="login-card">
+        <div class="login-logo">
+          <div class="login-wordmark">Mana Rasta</div>
+          <div class="login-subtitle">GHMC Admin Portal</div>
+        </div>
+        <div class="login-tricolour">
+          <div style="background:#FF9933;"></div>
+          <div style="background:#e5e7eb;"></div>
+          <div style="background:#058541;"></div>
+        </div>
+        <div class="login-input-group">
+          <label class="login-label">Officer ID / Email</label>
+          <input class="login-input" type="text" placeholder="rajesh.kumar@ghmc.gov.in" value="rajesh.kumar@ghmc.gov.in" />
+        </div>
+        <div class="login-input-group">
+          <label class="login-label">Password</label>
+          <input class="login-input" type="password" placeholder="••••••••" value="••••••••" />
+        </div>
+        <button class="login-btn" onclick="nav('dashboard')">Sign in to Portal →</button>
+        <div style="text-align:center;margin-top:14px;font-size:12px;color:#9ca3af;">Official GHMC portal · Authorised access only</div>
+      </div>
+    </div>
+  </div>
+
+  </div><!-- /content -->
+</div><!-- /main -->
+
+<script>
+// ── Bar chart ──────────────────────────────────────────────────
+const zones = ['Kuktp','Sering','Charm','LBNgr','Secbd','Khrtbd'];
+const submitted = [214,187,156,143,128,112];
+const fixed = [168,142,121,98,87,76];
+const maxVal = Math.max(...submitted);
+const bc = document.getElementById('barChart');
+if(bc) {
+  zones.forEach((z,i) => {
+    const wrap = document.createElement('div');
+    wrap.className = 'chart-bar-wrap';
+    wrap.style.gap = '4px';
+
+    const group = document.createElement('div');
+    group.style.cssText = 'display:flex;align-items:flex-end;gap:2px;width:100%;';
+
+    const b1 = document.createElement('div');
+    b1.className = 'chart-bar';
+    b1.style.cssText = `height:${Math.round(submitted[i]/maxVal*100)}px;flex:1;background:#002B5C;`;
+
+    const b2 = document.createElement('div');
+    b2.className = 'chart-bar';
+    b2.style.cssText = `height:${Math.round(fixed[i]/maxVal*100)}px;flex:1;background:#F5A623;`;
+
+    group.appendChild(b1);
+    group.appendChild(b2);
+
+    const lbl = document.createElement('div');
+    lbl.className = 'chart-bar-label';
+    lbl.textContent = z;
+
+    wrap.appendChild(group);
+    wrap.appendChild(lbl);
+    bc.appendChild(wrap);
+  });
+}
+
+// ── Router ─────────────────────────────────────────────────────
+const titles = {
+  dashboard:'Dashboard', reports:'Reports', map:'Live Map',
+  officers:'Officers', sla:'SLA Tracker', fraud:'Fraud Detection',
+  analytics:'Analytics', leaderboard:'Leaderboard', login:'Sign In'
+};
+
+function nav(page) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+
+  const pg = document.getElementById('page-' + page);
+  if(pg) pg.classList.add('active');
+
+  const ni = document.querySelector(`.nav-item[onclick="nav('${page}')"]`);
+  if(ni) ni.classList.add('active');
+
+  document.getElementById('topbarTitle').textContent = titles[page] || page;
+
+  // Toggle sidebar / login layout
+  const sidebar = document.getElementById('sidebar');
+  const main = document.querySelector('.main');
+  if(page === 'login') {
+    sidebar.style.display = 'none';
+    main.style.marginLeft = '0';
+  } else {
+    sidebar.style.display = 'flex';
+    main.style.marginLeft = '240px';
+  }
+}
+</script>
+</body>
+</html>

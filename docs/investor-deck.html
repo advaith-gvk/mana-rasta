@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mana Rasta Investor Deck</title>
+<style>
+  :root{
+    --navy:#002B5C;
+    --gold:#F5A623;
+    --green:#058541;
+    --red:#EF4444;
+    --bg:#F5F6FA;
+    --ink:#111827;
+    --muted:#6B7280;
+    --line:#E5E7EB;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:#e9edf5;font-family:"Segoe UI",system-ui,sans-serif;color:var(--ink)}
+  .deck{padding:28px}
+  .page{
+    width:1280px; min-height:720px; margin:0 auto 28px; background:#fff; position:relative;
+    overflow:hidden; box-shadow:0 18px 50px rgba(0,0,0,.12); border-radius:20px;
+    page-break-after:always;
+  }
+  .pad{padding:42px 52px}
+  .hero{
+    background:linear-gradient(135deg,#001d3d 0%, var(--navy) 62%, #0b4e93 100%);
+    color:#fff;
+  }
+  .tricolour{display:flex;height:8px}
+  .tricolour div{flex:1}
+  .eyebrow{
+    display:inline-block; padding:8px 14px; border-radius:999px; background:rgba(245,166,35,.15);
+    color:var(--gold); font-weight:700; letter-spacing:.08em; text-transform:uppercase; font-size:12px;
+    border:1px solid rgba(245,166,35,.28);
+  }
+  h1,h2,h3,p{margin:0}
+  .hero h1{font:700 54px/1.05 Georgia,serif; margin-top:22px; max-width:700px}
+  .hero .sub{font-size:20px; color:rgba(255,255,255,.82); margin-top:18px; max-width:720px; line-height:1.45}
+  .grid-2{display:grid; grid-template-columns:1.15fr .85fr; gap:24px}
+  .grid-4{display:grid; grid-template-columns:repeat(4,1fr); gap:14px}
+  .section-title{font-size:30px; font-weight:800; color:var(--navy); margin-bottom:14px}
+  .section-sub{font-size:15px; color:var(--muted); line-height:1.55; margin-bottom:18px}
+  .card{
+    background:#fff; border:1px solid var(--line); border-radius:18px; padding:18px 18px 16px;
+    box-shadow:0 1px 4px rgba(0,0,0,.04);
+  }
+  .metric{
+    border-left:4px solid var(--gold); background:#fff8e7;
+  }
+  .metric .k{font-size:11px; text-transform:uppercase; letter-spacing:.08em; color:#9ca3af; font-weight:700}
+  .metric .v{font-size:30px; font-weight:800; color:var(--navy); margin-top:8px}
+  .metric .d{font-size:13px; color:#8a8fa8; margin-top:6px; line-height:1.45}
+  .bullet-list{display:grid; gap:12px}
+  .bullet{
+    display:grid; grid-template-columns:24px 1fr; gap:12px; align-items:flex-start;
+  }
+  .dot{
+    width:24px; height:24px; border-radius:12px; display:flex; align-items:center; justify-content:center;
+    background:#ebf0f9; color:var(--navy); font-size:13px; font-weight:800; margin-top:2px;
+  }
+  .bullet b{display:block; font-size:16px; margin-bottom:3px}
+  .bullet span{font-size:14px; color:var(--muted); line-height:1.5}
+  .shot-grid{display:grid; grid-template-columns:repeat(2,1fr); gap:18px}
+  .shot{
+    background:#fff; border:1px solid var(--line); border-radius:18px; padding:14px;
+  }
+  .shot img{
+    width:100%; height:260px; object-fit:cover; border-radius:14px; display:block; background:#eef0f4;
+    border:1px solid #eef0f4;
+  }
+  .shot .caption{font-size:13px; color:var(--muted); margin-top:10px; line-height:1.45}
+  .badge{
+    display:inline-flex; align-items:center; gap:8px; border-radius:999px; padding:7px 12px; font-size:12px;
+    font-weight:700; background:#ebf0f9; color:var(--navy);
+  }
+  .callout{
+    background:linear-gradient(135deg,#fff8e7,#fff); border:1px solid #f6ddb0; border-radius:18px; padding:18px;
+  }
+  .callout h3{font-size:18px; color:var(--navy); margin-bottom:8px}
+  .callout p{font-size:14px; color:var(--muted); line-height:1.55}
+  .footer{
+    position:absolute; left:52px; right:52px; bottom:22px; display:flex; justify-content:space-between;
+    font-size:12px; color:#9ca3af;
+  }
+  .split{display:grid; grid-template-columns:1fr 1fr; gap:18px}
+  .tight li{margin:0 0 10px 0}
+  .tight{padding-left:18px; color:var(--muted); font-size:14px; line-height:1.5}
+</style>
+</head>
+<body>
+<div class="deck">
+
+  <section class="page hero">
+    <div class="tricolour">
+      <div style="background:#FF9933"></div>
+      <div style="background:#fff"></div>
+      <div style="background:#058541"></div>
+    </div>
+    <div class="pad">
+      <div class="eyebrow">Investor Deck</div>
+      <h1>Mana Rasta</h1>
+      <p class="sub">
+        A civic reporting platform built to help Hyderabad residents report potholes with high-quality evidence,
+        help administrators act faster, and create a stronger culture of civic responsibility through visible outcomes
+        and well-governed incentives.
+      </p>
+
+      <div class="grid-4" style="margin-top:36px">
+        <div class="card metric">
+          <div class="k">Executive Summary</div>
+          <div class="v">Citizen + Civic Ops</div>
+          <div class="d">Mobile reporting, admin workflows, analytics, fraud controls, and capture analysis in one system.</div>
+        </div>
+        <div class="card metric">
+          <div class="k">Core Need</div>
+          <div class="v">Better Inputs</div>
+          <div class="d">Most civic systems fail because report quality, ownership, and follow-through are weak.</div>
+        </div>
+        <div class="card metric">
+          <div class="k">Differentiator</div>
+          <div class="v">ML-Guided Capture</div>
+          <div class="d">Quality gating and pothole-focused analysis narrow the problem before it reaches operations.</div>
+        </div>
+        <div class="card metric">
+          <div class="k">Expansion Path</div>
+          <div class="v">Civic Issue Platform</div>
+          <div class="d">Future modules can extend to streetlights, footpaths, waterlogging, and adjacent urban defects.</div>
+        </div>
+      </div>
+    </div>
+    <div class="footer">
+      <span>Mana Rasta • Hyderabad civic reporting platform</span>
+      <span>1</span>
+    </div>
+  </section>
+
+  <section class="page">
+    <div class="tricolour">
+      <div style="background:#FF9933"></div>
+      <div style="background:#fff"></div>
+      <div style="background:#058541"></div>
+    </div>
+    <div class="pad">
+      <div class="grid-2">
+        <div>
+          <h2 class="section-title">Why the app was built</h2>
+          <p class="section-sub">
+            Potholes are a high-frequency, high-friction civic problem. Citizens need a fast way to report them.
+            Administrators need structured, trustworthy, non-duplicate inputs they can actually process.
+          </p>
+
+          <div class="bullet-list">
+            <div class="bullet">
+              <div class="dot">1</div>
+              <div><b>Civic responsibility needs a practical channel</b><span>Residents often see issues but lack a reliable, visible mechanism to escalate them with confidence.</span></div>
+            </div>
+            <div class="bullet">
+              <div class="dot">2</div>
+              <div><b>Operational systems break on poor-quality reports</b><span>Blurry images, weak location data, duplicate submissions, and unclear severity slow response and reduce trust.</span></div>
+            </div>
+            <div class="bullet">
+              <div class="dot">3</div>
+              <div><b>Closing the loop matters</b><span>Reporting becomes habit-forming only when citizens see progress, acknowledgment, and resolution signals after submission.</span></div>
+            </div>
+            <div class="bullet">
+              <div class="dot">4</div>
+              <div><b>Gamification makes civic action repeatable</b><span>Points, badges, and leaderboards convert one-time reporting into repeat participation, while preserving a public-good frame.</span></div>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div class="callout" style="margin-bottom:18px">
+            <h3>What Mana Rasta solves</h3>
+            <p>
+              It transforms a vague civic complaint into a structured workflow: guided capture, validated location,
+              severity tagging, operational review, analytics, and citizen-visible follow-through.
+            </p>
+          </div>
+
+          <div class="split">
+            <div class="card">
+              <div class="badge">Citizen Value</div>
+              <ul class="tight" style="margin-top:12px">
+                <li>Fast pothole reporting in under a minute</li>
+                <li>Clear status visibility after submission</li>
+                <li>Recognition for responsible participation</li>
+                <li>Simple, mobile-first experience</li>
+              </ul>
+            </div>
+            <div class="card">
+              <div class="badge">Operational Value</div>
+              <ul class="tight" style="margin-top:12px">
+                <li>Better report quality at intake</li>
+                <li>Lower duplicate and fraud noise</li>
+                <li>Structured admin workflow and SLA tracking</li>
+                <li>Actionable ward and zone analytics</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="card" style="margin-top:18px; background:#002B5C; color:#fff">
+            <h3 style="font-size:18px; margin-bottom:8px">Civic responsibility with incentives</h3>
+            <p style="font-size:14px; line-height:1.6; color:rgba(255,255,255,.82)">
+              The platform treats citizens as active participants in city upkeep. Gamification is used as an incentive
+              layer, not as a gimmick: it rewards valid reporting behavior while reinforcing public contribution.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="footer">
+      <span>Why now • why this problem • why this approach</span>
+      <span>2</span>
+    </div>
+  </section>
+
+  <section class="page">
+    <div class="tricolour">
+      <div style="background:#FF9933"></div>
+      <div style="background:#fff"></div>
+      <div style="background:#058541"></div>
+    </div>
+    <div class="pad">
+      <h2 class="section-title">Product experience and built system depth</h2>
+      <p class="section-sub">
+        Mana Rasta is already built as a multi-surface product: citizen mobile, capture workflow, success and tracking states,
+        leaderboard/rewards, admin dashboard, backend services, and a dedicated image-analysis service.
+      </p>
+
+      <div class="shot-grid">
+        <div class="shot">
+          <img src="../investor-assets/app-html-screens/capture-module.png" alt="Capture module">
+          <div class="caption"><b>Capture module.</b> Guided framing and ready-state UX are designed to improve the quality of evidence before a pothole is submitted.</div>
+        </div>
+        <div class="shot">
+          <img src="../investor-assets/app-html-screens/success-screen.png" alt="Success screen">
+          <div class="caption"><b>Success and trust layer.</b> Submission confirmation and next-step visibility reinforce civic confidence and repeat usage.</div>
+        </div>
+        <div class="shot">
+          <img src="../investor-assets/app-html-screens/leaderboard-screen.png" alt="Leaderboard">
+          <div class="caption"><b>Leaderboard and incentives.</b> Rewards create positive participation loops while keeping civic contribution socially visible.</div>
+        </div>
+        <div class="shot">
+          <img src="../investor-assets/dashboard-overview.png" alt="Dashboard overview">
+          <div class="caption"><b>Admin dashboard.</b> Queue visibility, analytics, SLA views, fraud review, and officer workflows turn reports into operational action.</div>
+        </div>
+      </div>
+    </div>
+    <div class="footer">
+      <span>Mobile + dashboard + workflow proof of depth</span>
+      <span>3</span>
+    </div>
+  </section>
+
+  <section class="page">
+    <div class="tricolour">
+      <div style="background:#FF9933"></div>
+      <div style="background:#fff"></div>
+      <div style="background:#058541"></div>
+    </div>
+    <div class="pad">
+      <div class="grid-2">
+        <div>
+          <h2 class="section-title">Machine learning narrows the problem</h2>
+          <p class="section-sub">
+            The project includes a dedicated ML service focused on capture quality and pothole-focused analysis.
+            Its role is not to replace operations. Its role is to reduce noise before reports enter the system.
+          </p>
+          <div class="bullet-list">
+            <div class="bullet">
+              <div class="dot">A</div>
+              <div><b>Quality gating</b><span>Blurry, low-light, cropped, or glare-heavy images can be flagged before they degrade the workflow.</span></div>
+            </div>
+            <div class="bullet">
+              <div class="dot">B</div>
+              <div><b>Pothole-focused detection</b><span>Candidate detection helps separate likely pothole images from non-actionable surfaces and edge cases.</span></div>
+            </div>
+            <div class="bullet">
+              <div class="dot">C</div>
+              <div><b>Guidance loop</b><span>Instead of silently failing, the system can instruct the user to hold steady, move closer, or reframe the subject.</span></div>
+            </div>
+            <div class="bullet">
+              <div class="dot">D</div>
+              <div><b>Operational efficiency</b><span>Better quality at intake means fewer wasted reviews, lower duplicate noise, and cleaner downstream analytics.</span></div>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div class="card" style="margin-bottom:18px">
+            <h3 style="font-size:18px; color:var(--navy); margin-bottom:10px">Fraud prevention and abuse control</h3>
+            <ul class="tight">
+              <li>Rate limiting on backend routes to control spam and OTP abuse</li>
+              <li>Fraud service to score suspicious usage patterns</li>
+              <li>Duplicate image checks to reduce repeated submissions</li>
+              <li>Moderation service to block unsafe or invalid image content</li>
+              <li>Capture logs and analytics to trace suspicious behavior over time</li>
+            </ul>
+          </div>
+          <div class="card" style="background:#f9fafb">
+            <h3 style="font-size:18px; color:var(--navy); margin-bottom:10px">Why this matters for investors and partners</h3>
+            <ul class="tight">
+              <li>The system is not just a form. It is a structured civic operations layer.</li>
+              <li>The project already spans mobile, admin, data, analytics, and ML components.</li>
+              <li>The narrow problem focus creates a strong wedge into broader civic issue reporting.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="footer">
+      <span>ML, trust, and abuse resistance</span>
+      <span>4</span>
+    </div>
+  </section>
+
+  <section class="page">
+    <div class="tricolour">
+      <div style="background:#FF9933"></div>
+      <div style="background:#fff"></div>
+      <div style="background:#058541"></div>
+    </div>
+    <div class="pad">
+      <div class="grid-2">
+        <div>
+          <h2 class="section-title">Future scope</h2>
+          <p class="section-sub">
+            Mana Rasta is designed as a pothole-first platform, but the same workflow model can support adjacent civic issues.
+          </p>
+          <div class="split">
+            <div class="card"><b>Broken streetlights</b><p style="margin-top:8px; color:var(--muted); font-size:14px; line-height:1.5">Image-based issue capture, location tagging, assignment, and status visibility.</p></div>
+            <div class="card"><b>Footpath issues</b><p style="margin-top:8px; color:var(--muted); font-size:14px; line-height:1.5">Encroachment, breakage, accessibility issues, and surface damage reporting.</p></div>
+            <div class="card"><b>Waterlogging</b><p style="margin-top:8px; color:var(--muted); font-size:14px; line-height:1.5">Severity and geo-aware reporting for rainfall and drainage-related incidents.</p></div>
+            <div class="card"><b>Other urban defects</b><p style="margin-top:8px; color:var(--muted); font-size:14px; line-height:1.5">Open category expansion using the same citizen, admin, analytics, and abuse-control foundations.</p></div>
+          </div>
+        </div>
+        <div>
+          <div class="callout" style="margin-bottom:18px">
+            <h3>Investment case</h3>
+            <p>
+              The project already demonstrates meaningful scope: a citizen app, an admin dashboard, backend workflow layers,
+              and an ML-assisted intake model. The next phase is not invention from zero. It is focused hardening, pilot rollout,
+              and category expansion.
+            </p>
+          </div>
+          <div class="card" style="background:#002B5C; color:#fff; margin-bottom:18px">
+            <h3 style="font-size:18px; margin-bottom:10px">What funding accelerates</h3>
+            <ul class="tight" style="color:rgba(255,255,255,.86)">
+              <li>Pilot deployment and operations support</li>
+              <li>Productionization of dashboard and backend workflows</li>
+              <li>Training-data pipeline and stronger pothole detection models</li>
+              <li>Expansion into adjacent civic issue categories</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h3 style="font-size:18px; color:var(--navy); margin-bottom:10px">Closing note</h3>
+            <p style="font-size:14px; color:var(--muted); line-height:1.6">
+              Mana Rasta combines civic responsibility, operational practicality, and well-governed incentives. It is built
+              to improve not just reporting volume, but reporting quality, system trust, and municipal actionability.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="footer">
+      <span>Pothole-first today • broader civic issue platform tomorrow</span>
+      <span>5</span>
+    </div>
+  </section>
+
+</div>
+</body>
+</html>

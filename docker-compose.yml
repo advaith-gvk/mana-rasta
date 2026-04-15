@@ -1,0 +1,99 @@
+version: '3.9'
+
+services:
+  postgres:
+    image: postgis/postgis:16-3.4
+    container_name: pothole_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: pothole_reporter
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: devpassword123
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./backend/migrations:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: pothole_redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  ml-service:
+    build:
+      context: ./ml-service
+      dockerfile: Dockerfile
+    container_name: pothole_ml_service
+    restart: unless-stopped
+    environment:
+      POTHOLE_ML_MODEL_VERSION: python-road-heuristic-v1
+    ports:
+      - "8001:8001"
+    volumes:
+      - ./ml-service/app:/app/app
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: pothole_backend
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      ml-service:
+        condition: service_started
+    environment:
+      NODE_ENV: development
+      PORT: 4000
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: pothole_reporter
+      DB_USER: postgres
+      DB_PASSWORD: devpassword123
+      REDIS_URL: redis://redis:6379
+      JWT_SECRET: dev_jwt_secret_change_in_production_please
+      MODERATION_PROVIDER: mock
+      POTHOLE_ML_SERVICE_URL: http://ml-service:8001
+    ports:
+      - "4000:4000"
+    volumes:
+      - ./backend/src:/app/src
+      - ./backend/.env:/app/.env
+    command: npm run dev
+
+  dashboard:
+    build:
+      context: ./dashboard
+      dockerfile: Dockerfile
+    container_name: pothole_dashboard
+    restart: unless-stopped
+    depends_on:
+      - backend
+    environment:
+      VITE_API_URL: http://localhost:4000/api/v1
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./dashboard/src:/app/src
+
+volumes:
+  postgres_data:
+  redis_data:
